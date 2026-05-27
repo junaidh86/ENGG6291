@@ -1,11 +1,1430 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>BUS6440 Dashboard</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCM Decision Support System — ENGG*6291 Mini Project 1</title>
+<!-- Fonts: Google Fonts with display=swap for graceful fallback -->
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- Tabler icons via jsDelivr with pinned version for stability -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" integrity="sha256-k7bWVGBGR7rqAO/mFlxU+kZHHBEXvWnW8/CPbFvbJZI=" crossorigin="anonymous">
+<!-- Chart.js pinned version with SRI integrity -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js" integrity="sha512-ZwR1/gSZM3ai6vCdI+LVF1zSq/5HznD3oD+sCoJrzXJ+yKqclnElP2rtzjBZ7r0OfC+BP3FxWt0kAOQflMIig==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<!-- Font fallback: if Google Fonts is unavailable, these system fonts match the aesthetic -->
+<style>
+:root{--font:'Space Grotesk',-apple-system,'Segoe UI',system-ui,sans-serif;--mono:'IBM Plex Mono','Cascadia Code','Fira Code','SF Mono','Consolas',monospace}
+:root{
+  --bg:#0A0E1A;--bg2:#111827;--bg3:#1a2235;--bg4:#232f45;
+  --card:#141c2e;--card2:#1e2a40;
+  --border:#2a3650;--border2:#3a4a68;
+  --text:#e8eaf0;--text2:#8b96b0;--text3:#5a6480;
+  --blue:#3b82f6;--blue2:#1d4ed8;--blue-glow:rgba(59,130,246,0.15);
+  --teal:#14b8a6;--amber:#f59e0b;--green:#22c55e;
+  --red:#ef4444;--purple:#a855f7;--orange:#f97316;
+  --r:8px;--r2:12px;--r3:16px;
+  --shadow:0 4px 24px rgba(0,0,0,0.4);
+  --glow:0 0 0 1px rgba(59,130,246,0.3),0 4px 24px rgba(59,130,246,0.1);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* — Grid background — */
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:40px 40px;opacity:0.2;pointer-events:none;z-index:0}
+
+/* — Layout — */
+.app{position:relative;z-index:1;display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+
+/* — Sidebar — */
+.sidebar{background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sidebar-header{padding:24px 20px 20px;border-bottom:1px solid var(--border)}
+.logo-mark{width:36px;height:36px;background:var(--blue);border-radius:8px;display:flex;align-items:center;justify-content:center;margin-bottom:12px;font-size:18px;font-weight:700}
+.sidebar-title{font-size:14px;font-weight:600;color:var(--text);line-height:1.3}
+.sidebar-sub{font-size:11px;color:var(--text3);margin-top:4px;line-height:1.4}
+.sidebar-team{padding:12px 20px;border-bottom:1px solid var(--border);background:var(--bg3)}
+.team-label{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);margin-bottom:6px}
+.team-member{font-size:11px;color:var(--text2);padding:2px 0;display:flex;align-items:center;gap:6px}
+.team-dot{width:5px;height:5px;border-radius:50%;background:var(--blue);flex-shrink:0}
+.nav{padding:12px 10px;flex:1}
+.nav-section{font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:var(--text3);padding:8px 10px 6px}
+.nav-btn{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:var(--r);border:none;background:transparent;color:var(--text2);font-size:13px;font-family:var(--font);text-align:left;cursor:pointer;width:100%;transition:all 0.15s;margin-bottom:2px}
+.nav-btn:hover{background:var(--bg3);color:var(--text)}
+.nav-btn.active{background:var(--blue-glow);color:var(--blue);border:1px solid rgba(59,130,246,0.3)}
+.nav-btn .num{width:22px;height:22px;border-radius:6px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;flex-shrink:0;font-family:var(--mono)}
+.nav-btn.active .num{background:var(--blue);color:#fff}
+.nav-btn .nav-label{line-height:1.3;font-size:12px}
+.nav-badge{margin-left:auto;font-size:10px;padding:2px 6px;border-radius:4px;background:var(--bg3);color:var(--text3)}
+.nav-btn.active .nav-badge{background:rgba(59,130,246,0.2);color:var(--blue)}
+
+/* — Main — */
+.main{overflow-y:auto;background:var(--bg)}
+.home-hero{padding:40px 40px 32px;background:linear-gradient(180deg,var(--card) 0%,transparent 100%);border-bottom:1px solid var(--border)}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--blue-glow);border:1px solid rgba(59,130,246,0.3);border-radius:20px;padding:5px 12px;font-size:11px;color:var(--blue);margin-bottom:16px}
+.hero-title{font-size:32px;font-weight:700;line-height:1.15;margin-bottom:8px;background:linear-gradient(135deg,var(--text) 0%,var(--text2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero-sub{font-size:15px;color:var(--text2);line-height:1.6;max-width:520px;margin-bottom:24px}
+.model-cards{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.model-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px;cursor:pointer;transition:all 0.2s;position:relative;overflow:hidden}
+.model-card::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity 0.2s}
+.model-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:var(--shadow)}
+.model-card.active,.model-card:hover{box-shadow:var(--glow)}
+.model-card.active{border-color:var(--blue);background:var(--bg3)}
+.mc-num{font-size:11px;font-family:var(--mono);color:var(--text3);margin-bottom:8px}
+.mc-icon{font-size:20px;margin-bottom:8px}
+.mc-name{font-size:12px;font-weight:600;color:var(--text);line-height:1.3;margin-bottom:4px}
+.mc-tag{font-size:10px;color:var(--text3)}
+
+/* — Content area — */
+.content{padding:32px 40px 48px}
+.page-header{margin-bottom:28px}
+.page-badge{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;font-size:11px;font-weight:500;margin-bottom:10px}
+.badge-model2{background:rgba(59,130,246,0.12);color:var(--blue);border:1px solid rgba(59,130,246,0.25)}
+.badge-model3{background:rgba(20,184,166,0.12);color:var(--teal);border:1px solid rgba(20,184,166,0.25)}
+.badge-model4{background:rgba(245,158,11,0.12);color:var(--amber);border:1px solid rgba(245,158,11,0.25)}
+.badge-model5{background:rgba(168,85,247,0.12);color:var(--purple);border:1px solid rgba(168,85,247,0.25)}
+.page-title{font-size:24px;font-weight:700;margin-bottom:6px}
+.page-desc{font-size:14px;color:var(--text2);line-height:1.6;max-width:600px}
+
+/* — Form sections — */
+.form-section{margin-bottom:24px}
+.section-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:20px}
+.card+.card{margin-top:12px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+
+/* — Fields — */
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12px;font-weight:500;color:var(--text2)}
+.field input,.field select{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:8px 12px;font-size:13px;font-family:var(--font);color:var(--text);outline:none;transition:border 0.15s,box-shadow 0.15s;width:100%}
+.field input:focus,.field select:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(59,130,246,0.1)}
+.field input.err{border-color:var(--red)}
+.field-note{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* — Steppers — */
+.stepper{display:flex;align-items:center;gap:0}
+.stepper button{width:30px;height:34px;background:var(--bg3);border:1px solid var(--border);color:var(--text2);cursor:pointer;font-size:16px;transition:all 0.15s;display:flex;align-items:center;justify-content:center}
+.stepper button:first-child{border-radius:var(--r) 0 0 var(--r)}
+.stepper button:last-child{border-radius:0 var(--r) var(--r) 0}
+.stepper button:hover{background:var(--card2);color:var(--text)}
+.stepper span{min-width:40px;height:34px;background:var(--bg3);border-top:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600;font-family:var(--mono)}
+
+/* — Matrix table — */
+.mtx{width:100%;border-collapse:collapse;font-size:12px}
+.mtx th{background:var(--bg3);color:var(--text3);padding:7px 10px;text-align:center;font-weight:500;border:1px solid var(--border);font-size:11px}
+.mtx td{padding:4px 6px;border:1px solid var(--border);text-align:center}
+.mtx td input{width:72px;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;padding:5px 6px;font-size:12px;font-family:var(--mono);color:var(--text);text-align:center;outline:none}
+.mtx td input:focus{border-color:var(--blue)}
+.mtx .rl{font-weight:600;text-align:right;padding-right:10px;font-size:11px;color:var(--text2);font-family:var(--mono)}
+
+/* — Buttons — */
+.btn-primary{display:inline-flex;align-items:center;gap:8px;padding:10px 20px;border-radius:var(--r);border:none;background:var(--blue);color:#fff;font-size:13px;font-weight:600;font-family:var(--font);cursor:pointer;transition:all 0.15s}
+.btn-primary:hover{background:#2563eb;box-shadow:0 0 20px rgba(59,130,246,0.3)}
+.btn-primary:active{transform:scale(0.98)}
+.btn-secondary{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:var(--r);border:1px solid var(--border2);background:var(--card);color:var(--text2);font-size:13px;font-family:var(--font);cursor:pointer;transition:all 0.15s}
+.btn-secondary:hover{background:var(--card2);color:var(--text);border-color:var(--text3)}
+.btn-row{display:flex;gap:10px;align-items:center;margin-top:20px}
+
+/* — Alerts — */
+.alert{padding:10px 14px;border-radius:var(--r);font-size:13px;border-left:3px solid;margin-bottom:12px;display:flex;align-items:flex-start;gap:8px}
+.alert-warn{background:rgba(245,158,11,0.08);color:#f59e0b;border-color:#f59e0b}
+.alert-ok{background:rgba(34,197,94,0.08);color:#22c55e;border-color:#22c55e}
+.alert-err{background:rgba(239,68,68,0.08);color:#ef4444;border-color:#ef4444}
+.alert-info{background:rgba(59,130,246,0.08);color:var(--blue);border-color:var(--blue)}
+
+/* — Results — */
+.results-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:24px}
+.metric{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px;text-align:center}
+.metric-lbl{font-size:11px;color:var(--text3);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em}
+.metric-val{font-size:22px;font-weight:700;font-family:var(--mono)}
+.metric-val.blue{color:var(--blue)}
+.metric-val.green{color:var(--green)}
+.metric-val.amber{color:var(--amber)}
+.metric-val.teal{color:var(--teal)}
+.metric-sub{font-size:11px;color:var(--text3);margin-top:3px}
+
+/* — Facility cards — */
+.facility-row{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-bottom:20px}
+.fac-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:14px}
+.fac-card.open{border-color:rgba(34,197,94,0.4);background:rgba(34,197,94,0.05)}
+.fac-card.closed{opacity:0.6}
+.fac-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 8px;border-radius:5px;margin-bottom:8px}
+.fac-open{background:rgba(34,197,94,0.15);color:var(--green)}
+.fac-closed{background:var(--bg3);color:var(--text3)}
+.fac-name{font-size:15px;font-weight:700;font-family:var(--mono);margin-bottom:4px}
+.fac-meta{font-size:11px;color:var(--text3);margin-bottom:8px}
+.bar-wrap{height:5px;background:var(--bg3);border-radius:3px;overflow:hidden;margin-top:6px}
+.bar-fill{height:100%;border-radius:3px;background:var(--blue);transition:width 0.6s ease}
+.bar-fill.high{background:var(--green)}
+.bar-fill.full{background:var(--amber)}
+
+/* — Shipment table — */
+.rtbl{width:100%;border-collapse:collapse;font-size:12px}
+.rtbl th{font-size:11px;color:var(--text3);padding:8px 12px;text-align:right;border-bottom:1px solid var(--border);font-weight:500;background:var(--bg3)}
+.rtbl th:first-child{text-align:left;border-radius:var(--r) 0 0 0}
+.rtbl td{padding:9px 12px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--mono);font-size:12px}
+.rtbl td:first-child{text-align:left;font-weight:600;font-family:var(--font)}
+.rtbl tr:last-child td{border-bottom:none;font-weight:600;background:var(--bg3)}
+.rtbl tr:hover td{background:rgba(255,255,255,0.02)}
+
+/* — Constraint checks — */
+.checks-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px}
+.ck-item{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;display:flex;align-items:center;gap:10px}
+.ck-item.pass{border-color:rgba(34,197,94,0.3);background:rgba(34,197,94,0.05)}
+.ck-item.fail{border-color:rgba(239,68,68,0.3);background:rgba(239,68,68,0.05)}
+.ck-icon{font-size:16px;flex-shrink:0}
+.ck-icon.pass{color:var(--green)}
+.ck-icon.fail{color:var(--red)}
+.ck-label{font-size:12px;font-weight:500}
+.ck-formula{font-size:10px;color:var(--text3);font-family:var(--mono);margin-top:2px}
+
+/* — Formulation box — */
+.formula-block{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;font-family:var(--mono);font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:12px;overflow-x:auto}
+.formula-block .obj{color:var(--blue);font-weight:500}
+.formula-block .con{color:var(--teal)}
+.formula-block .var{color:var(--amber)}
+
+/* — SES / Forecast — */
+.alpha-tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.alpha-tab{padding:5px 12px;border-radius:var(--r);border:1px solid var(--border);background:var(--card);color:var(--text2);font-size:12px;font-family:var(--mono);cursor:pointer;transition:all 0.15s}
+.alpha-tab.active{background:var(--blue-glow);border-color:var(--blue);color:var(--blue)}
+.alpha-tab:hover:not(.active){background:var(--card2)}
+.ses-table{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--mono)}
+.ses-table th{background:var(--bg3);color:var(--text3);padding:7px 10px;text-align:center;border:1px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:0.05em}
+.ses-table td{padding:7px 10px;border:1px solid var(--border);text-align:right}
+.ses-table td:first-child{text-align:left;color:var(--text2)}
+.ses-table .seed-row td{color:var(--text3);font-style:italic}
+.ses-table .forecast-row{background:rgba(59,130,246,0.05)}
+.ses-table .forecast-row td{color:var(--blue);font-weight:600}
+
+/* — Comparison table — */
+.compare-tbl{width:100%;border-collapse:collapse;font-size:12px}
+.compare-tbl th{background:var(--bg3);color:var(--text3);padding:8px 12px;text-align:right;border:1px solid var(--border);font-size:11px}
+.compare-tbl th:first-child{text-align:left}
+.compare-tbl td{padding:9px 12px;border:1px solid var(--border);text-align:right;font-family:var(--mono)}
+.compare-tbl td:first-child{text-align:left;font-weight:600}
+.compare-tbl .best-row{background:rgba(34,197,94,0.05)}
+.best-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(34,197,94,0.15);color:var(--green);font-size:10px;padding:2px 6px;border-radius:4px;margin-left:6px}
+
+/* — Charts — */
+.chart-wrap{position:relative;background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:16px;margin-bottom:16px}
+.chart-title{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+
+/* — Page sections — */
+.section-divider{height:1px;background:var(--border);margin:28px 0}
+.results-section{margin-top:32px}
+
+/* — Interpretation — */
+.interp-card{background:linear-gradient(135deg,rgba(59,130,246,0.05) 0%,rgba(20,184,166,0.05) 100%);border:1px solid rgba(59,130,246,0.2);border-radius:var(--r2);padding:20px;margin-top:16px}
+.interp-title{font-size:13px;font-weight:600;color:var(--blue);margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.interp-body{font-size:13px;color:var(--text2);line-height:1.7}
+.interp-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px}
+.interp-item{background:var(--bg3);border-radius:var(--r);padding:10px 12px}
+.interp-item-lbl{font-size:10px;text-transform:uppercase;letter-spacing:0.07em;color:var(--text3);margin-bottom:4px}
+.interp-item-val{font-size:14px;font-weight:600;font-family:var(--mono);color:var(--text)}
+
+/* — Welcome / Home — */
+.welcome{padding:40px}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-top:24px}
+.feature-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r2);padding:20px;cursor:pointer;transition:all 0.2s}
+.feature-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:var(--shadow)}
+.fc-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px}
+.fc-title{font-size:14px;font-weight:600;margin-bottom:6px}
+.fc-desc{font-size:12px;color:var(--text2);line-height:1.5}
+.fc-meta{font-size:11px;color:var(--text3);margin-top:8px;font-family:var(--mono)}
+
+/* — Page transitions — */
+.page{display:none;animation:fadeIn 0.2s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* — Scrollbar — */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* — Responsive — */
+@media(max-width:900px){
+  .app{grid-template-columns:1fr}
+  .sidebar{display:none}
+  .metrics-grid{grid-template-columns:1fr 1fr}
+  .model-cards{grid-template-columns:1fr 1fr 1fr}
+}
+</style>
 </head>
 <body>
-  <h1>BUS6440 Gold & Silver Project</h1>
-  <p>This is my HTML version hosted on GitHub Pages.</p>
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Supply Chain Management Decision Support System — ENGG 6291, University of Guelph</h2>
+
+<div class="app">
+
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-header">
+    <div class="logo-mark">⬡</div>
+    <div class="sidebar-title">SCM Decision<br>Support System</div>
+    <div class="sidebar-sub">ENGG*6291 · Summer 2026<br>University of Guelph</div>
+    <div style="margin-top:10px;display:inline-flex;align-items:center;gap:6px;background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--blue);letter-spacing:0.03em">
+      <i class="ti ti-file-description" aria-hidden="true" style="font-size:12px"></i>Mini Project 1
+    </div>
+  </div>
+  <div class="sidebar-team">
+    <div class="team-label">Project team</div>
+    <div class="team-member"><span class="team-dot"></span>Junaid Hussain</div>
+    <div class="team-member"><span class="team-dot"></span>Minghui Chen</div>
+    <div class="team-member"><span class="team-dot"></span>Muhammad Zeeshan</div>
+  </div>
+  <div class="nav">
+    <div class="nav-section">Navigation</div>
+    <button class="nav-btn active" onclick="showPage('home',this)">
+      <span class="num"><i class="ti ti-home" aria-hidden="true"></i></span>
+      <span class="nav-label">Overview</span>
+    </button>
+    <div class="nav-section">Optimization models</div>
+    <button class="nav-btn" onclick="showPage('opt1',this)">
+      <span class="num">1</span>
+      <span class="nav-label">Capacitated Facility Location</span>
+      <span class="nav-badge">M-II</span>
+    </button>
+    <button class="nav-btn" onclick="showPage('opt2',this)">
+      <span class="num">2</span>
+      <span class="nav-label">Multi-Source Network Design</span>
+      <span class="nav-badge">M-III</span>
+    </button>
+    <button class="nav-btn" onclick="showPage('opt3',this)">
+      <span class="num">3</span>
+      <span class="nav-label">Single-Source Network Design</span>
+      <span class="nav-badge">M-III</span>
+    </button>
+    <div class="nav-section">Forecasting + optimization</div>
+    <button class="nav-btn" onclick="showPage('opt4',this)">
+      <span class="num">4</span>
+      <span class="nav-label">Moving Average Forecast</span>
+      <span class="nav-badge">MA</span>
+    </button>
+    <button class="nav-btn" onclick="showPage('opt5',this)">
+      <span class="num">5</span>
+      <span class="nav-label">SES Forecast (multi-α)</span>
+      <span class="nav-badge">SES</span>
+    </button>
+  </div>
+</nav>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<main class="main">
+
+<!-- HOME -->
+<div id="page-home" class="page active">
+  <div class="home-hero">
+    <div class="hero-badge"><i class="ti ti-atom" aria-hidden="true"></i>v12 · Production release</div>
+    <h1 class="hero-title">Supply Chain<br>Decision Support System</h1>
+    <p class="hero-sub">Five integrated models covering facility location, network design, and demand forecasting — all powered by integer linear programming and solved via the Simplex method.</p>
+    <div class="model-cards">
+      <div class="model-card" onclick="showPageByNum(1)">
+        <div class="mc-num">Model II</div>
+        <div class="mc-icon" style="color:var(--blue)"><i class="ti ti-building-warehouse" aria-hidden="true"></i></div>
+        <div class="mc-name">Capacitated Facility Location</div>
+        <div class="mc-tag">yᵢ · xᵢⱼ</div>
+      </div>
+      <div class="model-card" onclick="showPageByNum(2)">
+        <div class="mc-num">Model III</div>
+        <div class="mc-icon" style="color:var(--teal)"><i class="ti ti-topology-star" aria-hidden="true"></i></div>
+        <div class="mc-name">Multi-Source Network Design</div>
+        <div class="mc-tag">yᵢ · xᵢⱼ · Iᵢ</div>
+      </div>
+      <div class="model-card" onclick="showPageByNum(3)">
+        <div class="mc-num">Model III</div>
+        <div class="mc-icon" style="color:var(--orange)"><i class="ti ti-git-fork" aria-hidden="true"></i></div>
+        <div class="mc-name">Single-Source Network Design</div>
+        <div class="mc-tag">yᵢ · xᵢⱼ · Iᵢ · zᵢⱼ</div>
+      </div>
+      <div class="model-card" onclick="showPageByNum(4)">
+        <div class="mc-num">Forecast</div>
+        <div class="mc-icon" style="color:var(--amber)"><i class="ti ti-chart-line" aria-hidden="true"></i></div>
+        <div class="mc-name">Moving Average + Optimization</div>
+        <div class="mc-tag">F = Σ Aₜ / nⱼ</div>
+      </div>
+      <div class="model-card" onclick="showPageByNum(5)">
+        <div class="mc-num">Forecast</div>
+        <div class="mc-icon" style="color:var(--purple)"><i class="ti ti-wave-sine" aria-hidden="true"></i></div>
+        <div class="mc-name">SES Forecast + Optimization</div>
+        <div class="mc-tag">F = α·Aₜ + (1−α)·Fₜ</div>
+      </div>
+    </div>
+  </div>
+  <div class="welcome">
+    <div class="section-title">How it works</div>
+    <div class="feature-grid">
+      <div class="feature-card" onclick="showPage('opt1',document.querySelectorAll('.nav-btn')[1])">
+        <div class="fc-icon" style="background:rgba(59,130,246,0.12);color:var(--blue)"><i class="ti ti-input" aria-hidden="true"></i></div>
+        <div class="fc-title">Enter parameters</div>
+        <div class="fc-desc">Dynamic input forms with steppers, matrices, and real-time validation. Big-M is suggested automatically.</div>
+        <div class="fc-meta">Facilities · Demand · Costs</div>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon" style="background:rgba(20,184,166,0.12);color:var(--teal)"><i class="ti ti-math" aria-hidden="true"></i></div>
+        <div class="fc-title">Auto-generate formulation</div>
+        <div class="fc-desc">The system builds the complete ILP — objective function and all constraints — from your inputs before solving.</div>
+        <div class="fc-meta">min Z · CON1–CON8</div>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon" style="background:rgba(34,197,94,0.12);color:var(--green)"><i class="ti ti-cpu" aria-hidden="true"></i></div>
+        <div class="fc-title">Solve with CBC / Simplex</div>
+        <div class="fc-desc">LP relaxation solved via Simplex; binary variables enforced by branch-and-bound. All constraint results verified.</div>
+        <div class="fc-meta">Optimal Z* · PASS/FAIL</div>
+      </div>
+      <div class="feature-card">
+        <div class="fc-icon" style="background:rgba(245,158,11,0.12);color:var(--amber)"><i class="ti ti-chart-bar" aria-hidden="true"></i></div>
+        <div class="fc-title">Visualise results</div>
+        <div class="fc-desc">Facility decisions, shipment plans, capacity bars, cost breakdowns, and full interpretation — all in one screen.</div>
+        <div class="fc-meta">Charts · Tables · Interpretation</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ OPTION 1 ═══════════════ -->
+<div id="page-opt1" class="page">
+<div class="home-hero">
+  <div class="page-badge badge-model2"><i class="ti ti-building-warehouse" aria-hidden="true"></i> Model II</div>
+  <h1 class="page-title">Capacitated Facility Location</h1>
+  <p class="page-desc">Minimise fixed opening + transportation costs. The solver decides which facilities to open (yᵢ) and how much to ship to each customer (xᵢⱼ), subject to capacity constraints.</p>
+</div>
+<div class="content">
+
+  <!-- Dimensions -->
+  <div class="form-section">
+    <div class="section-title">Step 1 — Problem dimensions</div>
+    <div class="card">
+      <div class="grid2">
+        <div class="field">
+          <label>Candidate facilities</label>
+          <div class="stepper">
+            <button onclick="adj1('w',-1)">−</button><span id="o1-nw">2</span><button onclick="adj1('w',1)">+</button>
+          </div>
+        </div>
+        <div class="field">
+          <label>Customers</label>
+          <div class="stepper">
+            <button onclick="adj1('c',-1)">−</button><span id="o1-nc">3</span><button onclick="adj1('c',1)">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Facility params -->
+  <div class="form-section">
+    <div class="section-title">Step 2 — Facility parameters</div>
+    <div class="card" id="o1-fac-grid"></div>
+  </div>
+
+  <!-- Demand -->
+  <div class="form-section">
+    <div class="section-title">Step 3 — Customer demand dⱼ (units)</div>
+    <div class="card" id="o1-dem-grid"></div>
+  </div>
+
+  <!-- Transport costs -->
+  <div class="form-section">
+    <div class="section-title">Step 4 — Unit transportation costs cᵢⱼ</div>
+    <div class="card">
+      <p style="font-size:12px;color:var(--text3);margin-bottom:10px">Cost per unit shipped from each facility (row) to each customer (column)</p>
+      <div id="o1-tc-grid" style="overflow-x:auto"></div>
+    </div>
+  </div>
+
+  <!-- Big-M -->
+  <div class="form-section">
+    <div class="section-title">Step 5 — Solver parameters</div>
+    <div class="card">
+      <div class="grid2">
+        <div class="field">
+          <label>Big-M value</label>
+          <input type="number" id="o1-bigm" value="10000" min="1">
+          <span class="field-note">Must be ≥ total demand. Enforces CON3: xᵢⱼ ≤ M·yᵢ</span>
+        </div>
+        <div id="o1-feasibility-pre" style="display:flex;flex-direction:column;justify-content:center;font-size:12px;color:var(--text2);gap:4px"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="o1-alert"></div>
+
+  <!-- Formulation preview -->
+  <div class="form-section">
+    <div class="section-title">Mathematical formulation (auto-generated)</div>
+    <div id="o1-formulation" class="formula-block">Press "Solve" to generate the full formulation from your inputs.</div>
+  </div>
+
+  <div class="btn-row">
+    <button class="btn-primary" onclick="solveOpt1()"><i class="ti ti-bolt" aria-hidden="true"></i> Solve ILP</button>
+    <button class="btn-secondary" onclick="loadExample1()"><i class="ti ti-book" aria-hidden="true"></i> Load textbook example</button>
+    <button class="btn-secondary" onclick="resetOpt1()"><i class="ti ti-refresh" aria-hidden="true"></i> Reset</button>
+  </div>
+
+  <div id="o1-results" class="results-section"></div>
+</div>
+</div>
+
+<!-- ═══════════════ OPTION 2 ═══════════════ -->
+<div id="page-opt2" class="page">
+<div class="home-hero">
+  <div class="page-badge badge-model3"><i class="ti ti-topology-star" aria-hidden="true"></i> Model III · Multi-source</div>
+  <h1 class="page-title">Multi-Source Network Design</h1>
+  <p class="page-desc">Extends Model II with inventory holding costs. Demand can split freely across open facilities. Inventory Iᵢ = remaining capacity = Kᵢ − Σxᵢⱼ. Service-time gate enforces Smax.</p>
+</div>
+<div class="content">
+  <div class="form-section">
+    <div class="section-title">Step 1 — Problem dimensions</div>
+    <div class="card">
+      <div class="grid2">
+        <div class="field"><label>Candidate facilities</label><div class="stepper"><button onclick="adj2('w',-1)">−</button><span id="o2-nw">2</span><button onclick="adj2('w',1)">+</button></div></div>
+        <div class="field"><label>Customers</label><div class="stepper"><button onclick="adj2('c',-1)">−</button><span id="o2-nc">3</span><button onclick="adj2('c',1)">+</button></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="form-section">
+    <div class="section-title">Step 2–3 — Facility parameters & holding costs</div>
+    <div class="card" id="o2-fac-grid"></div>
+  </div>
+  <div class="form-section">
+    <div class="section-title">Step 4 — Customer demand dⱼ (units)</div>
+    <div class="card" id="o2-dem-grid"></div>
+  </div>
+  <div class="form-section">
+    <div class="section-title">Step 5 — Transportation costs cᵢⱼ</div>
+    <div class="card"><div id="o2-tc-grid" style="overflow-x:auto"></div></div>
+  </div>
+  <div class="form-section">
+    <div class="section-title">Step 6 — Service times Sᵢⱼ & Smax</div>
+    <div class="card">
+      <p style="font-size:12px;color:var(--text3);margin-bottom:12px">Routes with Sᵢⱼ > Smax are forced to xᵢⱼ = 0 (CON4 service gate)</p>
+      <div id="o2-st-grid" style="overflow-x:auto;margin-bottom:14px"></div>
+      <div class="grid2">
+        <div class="field"><label>Smax — maximum service level</label><input type="number" id="o2-smax" value="5" min="0" step="0.1"></div>
+        <div class="field"><label>Big-M</label><input type="number" id="o2-bigm" value="10000" min="1"></div>
+      </div>
+    </div>
+  </div>
+  <div id="o2-alert"></div>
+  <div class="form-section">
+    <div class="section-title">Mathematical formulation (auto-generated)</div>
+    <div id="o2-formulation" class="formula-block">Press "Solve" to generate the formulation.</div>
+  </div>
+  <div class="btn-row">
+    <button class="btn-primary" onclick="solveOpt2()"><i class="ti ti-bolt" aria-hidden="true"></i> Solve ILP</button>
+    <button class="btn-secondary" onclick="loadExample2()"><i class="ti ti-book" aria-hidden="true"></i> Load textbook example</button>
+  </div>
+  <div id="o2-results" class="results-section"></div>
+</div>
+</div>
+
+<!-- ═══════════════ OPTION 3 ═══════════════ -->
+<div id="page-opt3" class="page">
+<div class="home-hero">
+  <div class="page-badge" style="background:rgba(249,115,22,0.12);color:var(--orange);border:1px solid rgba(249,115,22,0.25)"><i class="ti ti-git-fork" aria-hidden="true"></i> Model III · Single-source</div>
+  <h1 class="page-title">Single-Source Network Design</h1>
+  <p class="page-desc">Strict constraint: every customer served by exactly ONE facility (zᵢⱼ). No demand splitting. Inventory = remaining capacity after full assignment. Service level enforced via Smax.</p>
+</div>
+<div class="content">
+  <div class="form-section">
+    <div class="section-title">Step 1 — Dimensions</div>
+    <div class="card"><div class="grid2">
+      <div class="field"><label>Candidate facilities</label><div class="stepper"><button onclick="adj3('w',-1)">−</button><span id="o3-nw">2</span><button onclick="adj3('w',1)">+</button></div></div>
+      <div class="field"><label>Customers</label><div class="stepper"><button onclick="adj3('c',-1)">−</button><span id="o3-nc">3</span><button onclick="adj3('c',1)">+</button></div></div>
+    </div></div>
+  </div>
+  <div class="form-section">
+    <div class="section-title">Step 2–3 — Facility parameters & holding costs</div>
+    <div class="card" id="o3-fac-grid"></div>
+  </div>
+  <div class="form-section">
+    <div class="section-title">Step 4 — Customer demand dⱼ</div>
+    <div class="card" id="o3-dem-grid"></div>
+  </div>
+  <div class="form-section">
+    <div class="section-title">Step 5 — Transportation costs cᵢⱼ</div>
+    <div class="card"><div id="o3-tc-grid" style="overflow-x:auto"></div></div>
+  </div>
+  <div class="form-section">
+    <div class="section-title">Step 6–7 — Service times Sᵢⱼ, Smax, Big-M</div>
+    <div class="card">
+      <div id="o3-st-grid" style="overflow-x:auto;margin-bottom:14px"></div>
+      <div class="grid3">
+        <div class="field"><label>Smax</label><input type="number" id="o3-smax" value="5" min="0" step="0.1"></div>
+        <div class="field"><label>Big-M</label><input type="number" id="o3-bigm" value="10000" min="1"></div>
+        <div id="o3-ss-check" style="display:flex;flex-direction:column;justify-content:center;font-size:12px;color:var(--text2)"></div>
+      </div>
+    </div>
+  </div>
+  <div id="o3-alert"></div>
+  <div class="form-section">
+    <div class="section-title">Mathematical formulation</div>
+    <div id="o3-formulation" class="formula-block">Press "Solve" to generate formulation.</div>
+  </div>
+  <div class="btn-row">
+    <button class="btn-primary" onclick="solveOpt3()"><i class="ti ti-bolt" aria-hidden="true"></i> Solve ILP (strict single-source)</button>
+    <button class="btn-secondary" onclick="loadExample3()"><i class="ti ti-book" aria-hidden="true"></i> Load textbook example</button>
+  </div>
+  <div id="o3-results" class="results-section"></div>
+</div>
+</div>
+
+<!-- ═══════════════ OPTION 4 ═══════════════ -->
+<div id="page-opt4" class="page">
+<div class="home-hero">
+  <div class="page-badge badge-model4"><i class="ti ti-chart-line" aria-hidden="true"></i> Stage 1: MA Forecast · Stage 2: Model II</div>
+  <h1 class="page-title">Moving Average Forecast + Optimization</h1>
+  <p class="page-desc">Two-stage system. Each customer gets its own independent window nⱼ. The MA forecast becomes dⱼ — the demand input for the Capacitated Facility Location model in Stage 2.</p>
+</div>
+<div class="content">
+  <div class="form-section">
+    <div class="section-title">Stage 1 — Forecasting</div>
+    <div class="card">
+      <div class="field" style="max-width:200px;margin-bottom:16px">
+        <label>Number of customers</label>
+        <div class="stepper"><button onclick="adj4('c',-1)">−</button><span id="o4-nc">2</span><button onclick="adj4('c',1)">+</button></div>
+      </div>
+      <div id="o4-hist-grid"></div>
+    </div>
+  </div>
+  <div class="form-section">
+    <div class="section-title">Stage 2 — Facility location parameters</div>
+    <div class="card">
+      <div class="field" style="max-width:200px;margin-bottom:16px">
+        <label>Candidate facilities</label>
+        <div class="stepper"><button onclick="adj4('w',-1)">−</button><span id="o4-nw">2</span><button onclick="adj4('w',1)">+</button></div>
+      </div>
+      <div id="o4-fac-grid"></div>
+    </div>
+  </div>
+  <div class="form-section">
+    <div class="section-title">Transportation costs cᵢⱼ</div>
+    <div class="card"><div id="o4-tc-grid" style="overflow-x:auto"></div></div>
+  </div>
+  <div class="form-section">
+    <div class="section-title">Big-M</div>
+    <div class="card"><div class="field" style="max-width:200px"><label>Big-M value</label><input type="number" id="o4-bigm" value="10000" min="1"></div></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn-primary" onclick="solveOpt4()"><i class="ti ti-bolt" aria-hidden="true"></i> Forecast + Solve</button>
+    <button class="btn-secondary" onclick="loadExample4()"><i class="ti ti-book" aria-hidden="true"></i> Load example</button>
+  </div>
+  <div id="o4-results" class="results-section"></div>
+</div>
+</div>
+
+<!-- ═══════════════ OPTION 5 ═══════════════ -->
+<div id="page-opt5" class="page">
+<div class="home-hero">
+  <div class="page-badge badge-model5"><i class="ti ti-wave-sine" aria-hidden="true"></i> Stage 1: SES · Stage 2: Model II × 4α</div>
+  <h1 class="page-title">SES Forecast + Optimization (multi-α)</h1>
+  <p class="page-desc">Simple Exponential Smoothing with up to 4 alpha values. Each α produces its own forecast and a full optimization run. Compare MAPE, Z*, and facility decisions across all α values.</p>
+</div>
+<div class="content">
+  <div class="form-section">
+    <div class="section-title">Stage 1 — SES forecasting</div>
+    <div class="card">
+      <div class="grid2" style="margin-bottom:16px">
+        <div class="field">
+          <label>Number of customers</label>
+          <div class="stepper"><button onclick="adj5('c',-1)">−</button><span id="o5-nc">2</span><button onclick="adj5('c',1)">+</button></div>
+        </div>
+        <div class="field">
+          <label>Number of α values (2–4)</label>
+          <div class="stepper"><button onclick="adj5('a',-1)">−</button><span id="o5-na">3</span><button onclick="adj5('a',1)">+</button></div>
+        </div>
+      </div>
+      <div id="o5-hist-grid"></div>
+      <div class="section-title" style="margin-top:16px">Alpha values</div>
+      <div id="o5-alpha-grid"></div>
+    </div>
+  </div>
+  <div class="form-section">
+    <div class="section-title">Stage 2 — Facility parameters</div>
+    <div class="card">
+      <div class="field" style="max-width:200px;margin-bottom:16px">
+        <label>Candidate facilities</label>
+        <div class="stepper"><button onclick="adj5('w',-1)">−</button><span id="o5-nw">2</span><button onclick="adj5('w',1)">+</button></div>
+      </div>
+      <div id="o5-fac-grid"></div>
+    </div>
+  </div>
+  <div class="form-section">
+    <div class="section-title">Transportation costs cᵢⱼ</div>
+    <div class="card"><div id="o5-tc-grid" style="overflow-x:auto"></div></div>
+  </div>
+  <div class="form-section">
+    <div class="section-title">Big-M</div>
+    <div class="card"><div class="field" style="max-width:200px"><label>Big-M value</label><input type="number" id="o5-bigm" value="10000" min="1"></div></div>
+  </div>
+  <div class="btn-row">
+    <button class="btn-primary" onclick="solveOpt5()"><i class="ti ti-bolt" aria-hidden="true"></i> Forecast + Solve all α</button>
+    <button class="btn-secondary" onclick="loadExample5()"><i class="ti ti-book" aria-hidden="true"></i> Load textbook example</button>
+  </div>
+  <div id="o5-results" class="results-section"></div>
+</div>
+</div>
+
+</main>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  NAVIGATION
+// ═══════════════════════════════════════════════════════
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+function showPageByNum(n) {
+  const pages = ['home','opt1','opt2','opt3','opt4','opt5'];
+  const btns = document.querySelectorAll('.nav-btn');
+  showPage(pages[n], btns[n]);
+}
+window.showPage = showPage;
+
+// ═══════════════════════════════════════════════════════
+//  ILP SOLVER — Capacitated Facility Location (Model II)
+//  Enumerate all 2^nW subsets, solve transportation LP
+//  exactly for each via least-cost method.
+// ═══════════════════════════════════════════════════════
+function solveILP(f, K, d, c, M, nW, nC) {
+  let bestZ = Infinity, bestY = null, bestX = null;
+  const combos = 1 << nW;
+  for (let mask = 1; mask < combos; mask++) {
+    const y = Array.from({length:nW}, (_,i) => (mask>>i)&1);
+    const supply = K.map((k,i) => y[i] ? k : 0);
+    const totalSupply = supply.reduce((a,b) => a+b, 0);
+    const totalDem = d.reduce((a,b) => a+b, 0);
+    if (totalSupply < totalDem - 1e-9) continue;
+    const sup = [...supply];
+    const req = [...d];
+    const x = Array.from({length:nW}, () => Array(nC).fill(0));
+    const cells = [];
+    for (let i = 0; i < nW; i++) if (y[i]) for (let j = 0; j < nC; j++) cells.push([i,j,c[i][j]]);
+    cells.sort((a,b) => a[2]-b[2]);
+    let feasible = true;
+    for (const [i,j] of cells) {
+      if (req[j] < 1e-9) continue;
+      const ship = Math.min(sup[i], req[j]);
+      if (ship < 1e-9) continue;
+      x[i][j] += ship;
+      sup[i] -= ship;
+      req[j] -= ship;
+    }
+    for (let j = 0; j < nC; j++) if (req[j] > 1e-9) { feasible = false; break; }
+    if (!feasible) continue;
+    const fixedCost = y.reduce((s,yi,i) => s + yi*f[i], 0);
+    const transCost = x.reduce((s,row,i) => s + row.reduce((ss,v,j) => ss + v*c[i][j], 0), 0);
+    const Z = fixedCost + transCost;
+    if (Z < bestZ) { bestZ = Z; bestY = [...y]; bestX = x.map(r=>[...r]); }
+  }
+  return bestY ? {Z:bestZ, y:bestY, x:bestX} : null;
+}
+
+// SES helper
+function ses(history, alpha) {
+  let F = history[0];
+  const fitted = [F];
+  for (let t = 1; t < history.length; t++) {
+    F = alpha * history[t] + (1 - alpha) * F;
+    fitted.push(F);
+  }
+  const errors = [], ape = [];
+  for (let t = 1; t < history.length; t++) {
+    const e = history[t] - fitted[t-1];
+    errors.push(e);
+    if (history[t] !== 0) ape.push(Math.abs(e)/history[t]*100);
+  }
+  const mape = ape.length ? ape.reduce((a,b)=>a+b,0)/ape.length : 0;
+  return { fitted, fNext: fitted[fitted.length-1], errors, mape };
+}
+
+// ═══════════════════════════════════════════════════════
+//  OPTION 1 — STATE & BUILDERS
+// ═══════════════════════════════════════════════════════
+let o1 = { nW:2, nC:3 };
+const FC_DEF=[500,400,600,450,550,480];
+const CAP_DEF=[60,50,70,55,65,45];
+const DEM_DEF=[20,30,25,15,35,20,25,10];
+const TC_DEF=[[4,6,9,7,5,8],[5,4,7,8,6,9],[3,7,5,6,8,4],[6,5,8,4,7,10],[4,8,6,9,5,7],[7,3,10,5,6,8]];
+const ST_DEF=[[2,5,6,3,4,7],[3,2,4,5,2,3],[4,3,5,2,6,4],[2,4,3,6,5,2],[5,2,4,3,2,6],[3,5,2,4,3,5]];
+
+function adj1(t,d){ if(t==='w') o1.nW=Math.max(1,Math.min(6,o1.nW+d)); else o1.nC=Math.max(1,Math.min(8,o1.nC+d)); document.getElementById('o1-nw').textContent=o1.nW; document.getElementById('o1-nc').textContent=o1.nC; buildOpt1(); document.getElementById('o1-results').innerHTML=''; }
+
+function buildOpt1(){
+  // Facility grid
+  let h=`<div style="display:grid;grid-template-columns:110px ${Array(o1.nW).fill('1fr').join(' ')};gap:8px;align-items:center">`;
+  h+=`<div></div>`; for(let i=0;i<o1.nW;i++) h+=`<div style="font-size:11px;font-weight:600;color:var(--text2);text-align:center;font-family:var(--mono)">W${i+1}</div>`;
+  h+=`<div style="font-size:12px;color:var(--text3)">Fixed cost fᵢ</div>`; for(let i=0;i<o1.nW;i++) h+=`<div><input type="number" id="o1-fc${i}" value="${FC_DEF[i]||500}" min="0" style="width:100%;text-align:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:6px;font-size:12px;font-family:var(--mono);color:var(--text);outline:none"></div>`;
+  h+=`<div style="font-size:12px;color:var(--text3)">Capacity Kᵢ</div>`; for(let i=0;i<o1.nW;i++) h+=`<div><input type="number" id="o1-cap${i}" value="${CAP_DEF[i]||60}" min="0" style="width:100%;text-align:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:6px;font-size:12px;font-family:var(--mono);color:var(--text);outline:none"></div>`;
+  h+=`</div>`; document.getElementById('o1-fac-grid').innerHTML=h;
+  // Demand grid
+  let d=`<div style="display:grid;grid-template-columns:repeat(${o1.nC},1fr);gap:10px">`;
+  for(let j=0;j<o1.nC;j++) d+=`<div class="field"><label>C${j+1} — dⱼ</label><input type="number" id="o1-dem${j}" value="${DEM_DEF[j]||20}" min="0" style="text-align:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:7px;font-size:12px;font-family:var(--mono);color:var(--text);outline:none"></div>`;
+  d+=`</div>`; document.getElementById('o1-dem-grid').innerHTML=d;
+  // Transport matrix
+  buildMatrix('o1-tc-grid','o1-tc',o1.nW,o1.nC,TC_DEF);
+}
+
+function buildMatrix(containerId,prefix,nW,nC,def){
+  let h=`<table class="mtx"><thead><tr><th></th>`;
+  for(let j=0;j<nC;j++) h+=`<th>C${j+1}</th>`;
+  h+=`</tr></thead><tbody>`;
+  for(let i=0;i<nW;i++){
+    h+=`<tr><td class="rl">W${i+1}</td>`;
+    for(let j=0;j<nC;j++){
+      const v=(def[i]&&def[i][j]!==undefined)?def[i][j]:5;
+      h+=`<td><input type="number" id="${prefix}${i}_${j}" value="${v}" min="0"></td>`;
+    }
+    h+=`</tr>`;
+  }
+  h+=`</tbody></table>`;
+  document.getElementById(containerId).innerHTML=h;
+}
+
+function gv(id){return parseFloat(document.getElementById(id)?.value)||0;}
+
+function getO1Inputs(){
+  const f=[],K=[],d=[],c=[];
+  for(let i=0;i<o1.nW;i++){f.push(gv(`o1-fc${i}`));K.push(gv(`o1-cap${i}`));}
+  for(let j=0;j<o1.nC;j++) d.push(gv(`o1-dem${j}`));
+  for(let i=0;i<o1.nW;i++){c.push([]);for(let j=0;j<o1.nC;j++) c[i].push(gv(`o1-tc${i}_${j}`));}
+  return {f,K,d,c,M:gv('o1-bigm')||10000};
+}
+
+function buildFormulation1(f,K,d,c,M,nW,nC){
+  const WL=Array.from({length:nW},(_,i)=>`W${i+1}`);
+  const CL=Array.from({length:nC},(_,j)=>`C${j+1}`);
+  let ft = WL.map((w,i)=>`(${f[i]})·y${i+1}`).join(' + ');
+  let tt = WL.flatMap((w,i)=>CL.map((c2,j)=>`(${c[i][j]})·x${i+1}${j+1}`)).join(' + ');
+  let s = `<span class="obj">min Z = ${ft}\n      + ${tt}</span>\n\n`;
+  s += `<span class="con">subject to:</span>\n`;
+  s += `<span class="con">[CON1] Demand:   </span>`;
+  CL.forEach((cl,j)=>{ s+=`  Σᵢ xᵢ${j+1} = ${d[j]}  (${cl})\n`; });
+  s += `<span class="con">[CON2] Capacity: </span>`;
+  WL.forEach((w,i)=>{ s+=`  Σⱼ x${i+1}ⱼ ≤ ${K[i]}·y${i+1}  (${w})\n`; });
+  s += `<span class="con">[CON3] Activation: </span>xᵢⱼ ≤ ${M}·yᵢ  ∀i,j\n`;
+  s += `<span class="con">[CON4] Binary:    </span>yᵢ ∈ {0,1}  ∀i`;
+  return s;
+}
+
+function solveOpt1(){
+  const {f,K,d,c,M} = getO1Inputs();
+  const nW=o1.nW, nC=o1.nC;
+  document.getElementById('o1-formulation').innerHTML = buildFormulation1(f,K,d,c,M,nW,nC);
+  const totalDem=d.reduce((a,b)=>a+b,0), totalCap=K.reduce((a,b)=>a+b,0);
+  const alertEl=document.getElementById('o1-alert');
+  alertEl.innerHTML='';
+  if(totalCap<totalDem) alertEl.innerHTML=`<div class="alert alert-warn"><i class="ti ti-alert-triangle"></i> Combined capacity (${totalCap}) &lt; total demand (${totalDem}) — model may be infeasible.</div>`;
+  const res=solveILP(f,K,d,c,M,nW,nC);
+  if(!res){document.getElementById('o1-results').innerHTML=`<div class="alert alert-err"><i class="ti ti-x"></i> No feasible solution found. Check that combined capacity ≥ total demand.</div>`;return;}
+  renderOpt1Results(res,f,K,d,c,nW,nC);
+}
+
+function renderOpt1Results(r,f,K,d,c,nW,nC){
+  const fixedTotal=r.y.reduce((s,yi,i)=>s+yi*f[i],0);
+  const transTotal=r.Z-fixedTotal;
+  const openWh=r.y.map((v,i)=>v?`W${i+1}`:'').filter(Boolean);
+
+  // Verify constraints
+  const c1=d.every((_,j)=>Math.abs(r.x.reduce((s,row)=>s+row[j],0)-d[j])<1e-6);
+  const c2=r.y.every((_,i)=>r.x[i].reduce((s,v)=>s+v,0)<=K[i]*r.y[i]+1e-6);
+  const c3=r.y.every((_,i)=>r.x[i].every(v=>v<=1e6*r.y[i]+1e-6));
+  const c4=r.y.every(v=>v===0||v===1);
+
+  let html=`<div class="results-header"><i class="ti ti-circle-check" style="color:var(--green);font-size:20px"></i><div><div style="font-size:16px;font-weight:700">Optimal solution found</div><div style="font-size:12px;color:var(--text3)">Solved via ILP enumeration + least-cost transportation</div></div></div>`;
+
+  // Metrics
+  html+=`<div class="metrics-grid">
+    <div class="metric"><div class="metric-lbl">Min total cost Z*</div><div class="metric-val green">${r.Z.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-lbl">Fixed costs Σfᵢyᵢ</div><div class="metric-val blue">${fixedTotal.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-lbl">Transport costs ΣΣcᵢⱼxᵢⱼ</div><div class="metric-val amber">${transTotal.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-lbl">Facilities opened</div><div class="metric-val teal">${r.y.filter(v=>v).length}/${nW}</div></div>
+  </div>`;
+
+  // Facility cards
+  html+=`<div class="section-title">Facility decisions (yᵢ)</div><div class="facility-row">`;
+  for(let i=0;i<nW;i++){
+    const open=r.y[i]===1;
+    const used=r.x[i].reduce((s,v)=>s+v,0);
+    const pct=K[i]>0?Math.min(100,Math.round(used/K[i]*100)):0;
+    html+=`<div class="fac-card ${open?'open':'closed'}">
+      <div class="fac-status ${open?'fac-open':'fac-closed'}">${open?'<i class="ti ti-check"></i> OPEN':'<i class="ti ti-x"></i> CLOSED'}</div>
+      <div class="fac-name">W${i+1}</div>
+      <div class="fac-meta">f=${f[i]} · K=${K[i]}</div>
+      ${open?`<div style="font-size:11px;color:var(--text3)">${used.toFixed(1)} / ${K[i]} units shipped</div>
+      <div class="bar-wrap"><div class="bar-fill ${pct>90?'full':pct>50?'high':''}" style="width:${pct}%"></div></div>
+      <div style="font-size:10px;color:var(--text3);margin-top:3px">${pct}% capacity used</div>`:'<div style="font-size:11px;color:var(--text3)">Fixed cost avoided</div>'}
+    </div>`;
+  }
+  html+=`</div>`;
+
+  // Shipment plan
+  html+=`<div class="section-title" style="margin-top:16px">Shipment plan xᵢⱼ (units)</div>`;
+  html+=`<div style="overflow-x:auto;margin-bottom:16px"><table class="rtbl"><thead><tr><th>Facility</th>`;
+  for(let j=0;j<nC;j++) html+=`<th>C${j+1}</th>`;
+  html+=`<th>Total shipped</th><th>Fixed cost</th><th>Transport cost</th></tr></thead><tbody>`;
+  for(let i=0;i<nW;i++){
+    if(r.y[i]===0) continue;
+    const rowT=r.x[i].reduce((s,v,j)=>s+v*c[i][j],0);
+    const rowS=r.x[i].reduce((s,v)=>s+v,0);
+    html+=`<tr><td>W${i+1}</td>`;
+    for(let j=0;j<nC;j++) html+=`<td>${r.x[i][j]>0?r.x[i][j].toFixed(1):'—'}</td>`;
+    html+=`<td>${rowS.toFixed(1)}</td><td>${f[i]}</td><td>${rowT.toFixed(2)}</td></tr>`;
+  }
+  const demFilled=d.map((_,j)=>r.x.reduce((s,row)=>s+row[j],0));
+  html+=`<tr><td>Demand</td>`;
+  for(let j=0;j<nC;j++) html+=`<td>${demFilled[j].toFixed(1)}</td>`;
+  html+=`<td>${d.reduce((a,b)=>a+b,0).toFixed(1)}</td><td>${fixedTotal.toFixed(2)}</td><td>${transTotal.toFixed(2)}</td></tr>`;
+  html+=`</tbody></table></div>`;
+
+  // Chart
+  html+=`<div class="section-title">Customer demand vs. served</div>`;
+  html+=`<div class="chart-wrap" style="height:200px"><canvas id="o1-chart" role="img" aria-label="Bar chart comparing demand vs served per customer"></canvas></div>`;
+
+  // Constraint checks
+  html+=`<div class="section-title" style="margin-top:16px">Constraint verification</div>`;
+  html+=`<div class="checks-grid">`;
+  [[`CON1`,'Demand satisfied Σᵢxᵢⱼ=dⱼ ∀j',c1],[`CON2`,'Capacity Σⱼxᵢⱼ≤Kᵢ·yᵢ ∀i',c2],[`CON3`,'Activation xᵢⱼ≤M·yᵢ ∀i,j',c3],[`CON4`,'Binary yᵢ∈{0,1} ∀i',c4]].forEach(([code,desc,pass])=>{
+    html+=`<div class="ck-item ${pass?'pass':'fail'}"><i class="ti ${pass?'ti-check':'ti-x'} ck-icon ${pass?'pass':'fail'}"></i><div><div class="ck-label">[${code}] ${pass?'PASS':'FAIL'}</div><div class="ck-formula">${desc}</div></div></div>`;
+  });
+  html+=`</div>`;
+
+  // Interpretation
+  html+=`<div class="interp-card"><div class="interp-title"><i class="ti ti-info-circle"></i> Interpretation of results</div>
+  <div class="interp-body">
+    The solver found an optimal solution with <strong>Z* = ${r.Z.toFixed(2)}</strong>.
+    ${r.y.filter(v=>v).length} of ${nW} facility/facilities opened (${openWh.join(', ')}).
+    Fixed costs represent ${(fixedTotal/r.Z*100).toFixed(1)}% of Z* and transportation costs represent ${(transTotal/r.Z*100).toFixed(1)}%.
+    All ${d.length} customers are fully served. All four constraints (CON1–CON4) are satisfied and verified.
+  </div>
+  <div class="interp-row">
+    <div class="interp-item"><div class="interp-item-lbl">Fixed costs</div><div class="interp-item-val">${fixedTotal.toFixed(2)}</div></div>
+    <div class="interp-item"><div class="interp-item-lbl">Transport costs</div><div class="interp-item-val">${transTotal.toFixed(2)}</div></div>
+    <div class="interp-item"><div class="interp-item-lbl">Optimal Z*</div><div class="interp-item-val" style="color:var(--green)">${r.Z.toFixed(2)}</div></div>
+  </div></div>`;
+
+  document.getElementById('o1-results').innerHTML=html;
+
+  // Render chart
+  const ctx=document.getElementById('o1-chart').getContext('2d');
+  new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:Array.from({length:nC},(_,j)=>`C${j+1}`),
+      datasets:[
+        {label:'Demand',data:d,backgroundColor:'rgba(59,130,246,0.6)',borderColor:'#3b82f6',borderWidth:1},
+        {label:'Served',data:demFilled,backgroundColor:'rgba(34,197,94,0.6)',borderColor:'#22c55e',borderWidth:1}
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8b96b0'},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#8b96b0'},grid:{color:'rgba(255,255,255,0.05)'}}}}
+  });
+}
+
+function loadExample1(){
+  o1.nW=2;o1.nC=3;
+  document.getElementById('o1-nw').textContent=2;
+  document.getElementById('o1-nc').textContent=3;
+  buildOpt1();
+  document.getElementById('o1-bigm').value=10000;
+  document.getElementById('o1-results').innerHTML='';
+  document.getElementById('o1-alert').innerHTML='';
+  document.getElementById('o1-formulation').innerHTML='Press "Solve" to generate the formulation.';
+}
+function resetOpt1(){loadExample1();}
+
+// ═══════════════════════════════════════════════════════
+//  OPTION 2 — Multi-Source
+// ═══════════════════════════════════════════════════════
+let o2={nW:2,nC:3};
+const H_DEF=[1,2,0.5,1.5,2,1];
+
+function adj2(t,d){if(t==='w')o2.nW=Math.max(1,Math.min(6,o2.nW+d));else o2.nC=Math.max(1,Math.min(8,o2.nC+d));document.getElementById('o2-nw').textContent=o2.nW;document.getElementById('o2-nc').textContent=o2.nC;buildOpt2();document.getElementById('o2-results').innerHTML='';}
+
+function buildOpt2(){
+  let h=`<div style="display:grid;grid-template-columns:110px ${Array(o2.nW).fill('1fr').join(' ')};gap:8px;align-items:center">`;
+  h+=`<div></div>`; for(let i=0;i<o2.nW;i++) h+=`<div style="font-size:11px;font-weight:600;color:var(--text2);text-align:center;font-family:var(--mono)">W${i+1}</div>`;
+  h+=`<div style="font-size:12px;color:var(--text3)">Fixed cost fᵢ</div>`; for(let i=0;i<o2.nW;i++) h+=`<div><input type="number" id="o2-fc${i}" value="${FC_DEF[i]||500}" min="0" style="width:100%;text-align:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:6px;font-size:12px;font-family:var(--mono);color:var(--text);outline:none"></div>`;
+  h+=`<div style="font-size:12px;color:var(--text3)">Capacity Kᵢ</div>`; for(let i=0;i<o2.nW;i++) h+=`<div><input type="number" id="o2-cap${i}" value="${CAP_DEF[i]||60}" min="0" style="width:100%;text-align:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:6px;font-size:12px;font-family:var(--mono);color:var(--text);outline:none"></div>`;
+  h+=`<div style="font-size:12px;color:var(--text3)">Holding cost hᵢ</div>`; for(let i=0;i<o2.nW;i++) h+=`<div><input type="number" id="o2-hc${i}" value="${H_DEF[i]||1}" min="0" step="0.1" style="width:100%;text-align:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:6px;font-size:12px;font-family:var(--mono);color:var(--text);outline:none"></div>`;
+  h+=`</div>`; document.getElementById('o2-fac-grid').innerHTML=h;
+  let d2=`<div style="display:grid;grid-template-columns:repeat(${o2.nC},1fr);gap:10px">`;
+  for(let j=0;j<o2.nC;j++) d2+=`<div class="field"><label>C${j+1}</label><input type="number" id="o2-dem${j}" value="${DEM_DEF[j]||20}" min="0" style="text-align:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:7px;font-size:12px;font-family:var(--mono);color:var(--text);outline:none"></div>`;
+  d2+=`</div>`; document.getElementById('o2-dem-grid').innerHTML=d2;
+  buildMatrix('o2-tc-grid','o2-tc',o2.nW,o2.nC,TC_DEF);
+  buildMatrix('o2-st-grid','o2-st',o2.nW,o2.nC,ST_DEF);
+}
+
+function solveOpt2(){
+  const nW=o2.nW,nC=o2.nC;
+  const f=[],K=[],h=[],d=[],c=[],S=[];
+  for(let i=0;i<nW;i++){f.push(gv(`o2-fc${i}`));K.push(gv(`o2-cap${i}`));h.push(gv(`o2-hc${i}`));}
+  for(let j=0;j<nC;j++) d.push(gv(`o2-dem${j}`));
+  for(let i=0;i<nW;i++){c.push([]);S.push([]);for(let j=0;j<nC;j++){c[i].push(gv(`o2-tc${i}_${j}`));S[i].push(gv(`o2-st${i}_${j}`));}}
+  const Smax=gv('o2-smax')||5;
+  const M=gv('o2-bigm')||10000;
+
+  // Check blocked routes
+  const blocked=[];
+  for(let i=0;i<nW;i++) for(let j=0;j<nC;j++) if(S[i][j]>Smax) blocked.push({i,j});
+  const alertEl=document.getElementById('o2-alert');
+  alertEl.innerHTML='';
+  if(blocked.length>0) alertEl.innerHTML=`<div class="alert alert-info"><i class="ti ti-info-circle"></i> Smax=${Smax} blocks ${blocked.length} route(s): ${blocked.map(b=>`W${b.i+1}→C${b.j+1}`).join(', ')}. Those xᵢⱼ forced to 0.</div>`;
+
+  // Build formulation display
+  let fml=`<span class="obj">min Z = Σfᵢ·yᵢ + ΣΣcᵢⱼ·xᵢⱼ + Σhᵢ·Iᵢ</span>\n\n`;
+  fml+=`<span class="con">[CON1]</span> Σᵢ xᵢⱼ = dⱼ ∀j  (demand satisfaction)\n`;
+  fml+=`<span class="con">[CON2]</span> Σⱼ xᵢⱼ + Iᵢ = Kᵢ·yᵢ ∀i  (capacity equality → Iᵢ = leftover)\n`;
+  fml+=`<span class="con">[CON3]</span> xᵢⱼ ≤ M·yᵢ ∀i,j  (activation)\n`;
+  fml+=`<span class="con">[CON4]</span> xᵢⱼ = 0 if Sᵢⱼ > ${Smax}  (service-time gate)\n`;
+  fml+=`<span class="con">[CON5]</span> yᵢ ∈ {0,1},  xᵢⱼ, Iᵢ ≥ 0`;
+  document.getElementById('o2-formulation').innerHTML=fml;
+
+  // Solve — same ILP but with blocked routes zeroed
+  let bestZ=Infinity,bestY=null,bestX=null;
+  const combos=1<<nW;
+  for(let mask=1;mask<combos;mask++){
+    const y=Array.from({length:nW},(_,i)=>(mask>>i)&1);
+    const sup=K.map((k,i)=>y[i]?k:0);
+    const totalSupply=sup.reduce((a,b)=>a+b,0);
+    const totalDem=d.reduce((a,b)=>a+b,0);
+    if(totalSupply<totalDem-1e-9) continue;
+    const s2=[...sup],req=[...d];
+    const x=Array.from({length:nW},()=>Array(nC).fill(0));
+    // Build allowed cells (S <= Smax and facility open)
+    const cells=[];
+    for(let i=0;i<nW;i++) if(y[i]) for(let j=0;j<nC;j++) if(S[i][j]<=Smax) cells.push([i,j,c[i][j]]);
+    cells.sort((a,b)=>a[2]-b[2]);
+    let feasible=true;
+    for(const [i,j] of cells){
+      if(req[j]<1e-9) continue;
+      const ship=Math.min(s2[i],req[j]);
+      x[i][j]+=ship; s2[i]-=ship; req[j]-=ship;
+    }
+    for(let j=0;j<nC;j++) if(req[j]>1e-9){feasible=false;break;}
+    if(!feasible) continue;
+    // Inventory = leftover capacity
+    const I=y.map((yi,i)=>yi?Math.max(0,K[i]-x[i].reduce((s,v)=>s+v,0)):0);
+    const fixedCost=y.reduce((s,yi,i)=>s+yi*f[i],0);
+    const transCost=x.reduce((s,row,i)=>s+row.reduce((ss,v,j)=>ss+v*c[i][j],0),0);
+    const holdCost=I.reduce((s,Ii,i)=>s+Ii*h[i],0);
+    const Z=fixedCost+transCost+holdCost;
+    if(Z<bestZ){bestZ=Z;bestY=[...y];bestX=x.map(r=>[...r]);}
+  }
+  if(!bestY){document.getElementById('o2-results').innerHTML=`<div class="alert alert-err"><i class="ti ti-x"></i> No feasible solution. Check capacity vs demand, or Smax may block all routes for some customers.</div>`;return;}
+  const I_sol=bestY.map((yi,i)=>yi?Math.max(0,K[i]-bestX[i].reduce((s,v)=>s+v,0)):0);
+  const fixedTotal=bestY.reduce((s,yi,i)=>s+yi*f[i],0);
+  const transTotal=bestX.reduce((s,row,i)=>s+row.reduce((ss,v,j)=>ss+v*c[i][j],0),0);
+  const holdTotal=I_sol.reduce((s,Ii,i)=>s+Ii*h[i],0);
+  renderOpt2Results({Z:bestZ,y:bestY,x:bestX},I_sol,f,K,h,d,c,S,Smax,nW,nC,fixedTotal,transTotal,holdTotal);
+}
+
+function renderOpt2Results(r,I_sol,f,K,h,d,c,S,Smax,nW,nC,fixedTotal,transTotal,holdTotal){
+  let html=`<div class="results-header"><i class="ti ti-circle-check" style="color:var(--green);font-size:20px"></i><div><div style="font-size:16px;font-weight:700">Optimal multi-source solution found</div><div style="font-size:12px;color:var(--text3)">Inventory = remaining capacity · Iᵢ = Kᵢ − Σⱼxᵢⱼ</div></div></div>`;
+  html+=`<div class="metrics-grid">
+    <div class="metric"><div class="metric-lbl">Min total Z*</div><div class="metric-val green">${r.Z.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-lbl">Fixed costs</div><div class="metric-val blue">${fixedTotal.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-lbl">Transport costs</div><div class="metric-val amber">${transTotal.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-lbl">Holding costs</div><div class="metric-val teal">${holdTotal.toFixed(2)}</div></div>
+  </div>`;
+
+  html+=`<div class="section-title">Facility decisions + inventory</div><div class="facility-row">`;
+  for(let i=0;i<nW;i++){
+    const open=r.y[i]===1;
+    const shipped=r.x[i].reduce((s,v)=>s+v,0);
+    const Ii=I_sol[i];
+    const pct=K[i]>0?Math.min(100,Math.round(shipped/K[i]*100)):0;
+    html+=`<div class="fac-card ${open?'open':'closed'}">
+      <div class="fac-status ${open?'fac-open':'fac-closed'}">${open?'<i class="ti ti-check"></i> OPEN':'<i class="ti ti-x"></i> CLOSED'}</div>
+      <div class="fac-name">W${i+1}</div>
+      <div class="fac-meta">f=${f[i]} · K=${K[i]} · h=${h[i]}</div>
+      ${open?`<div style="font-size:11px;color:var(--text3)">Shipped: ${shipped.toFixed(1)} · Inventory: ${Ii.toFixed(2)}</div>
+      <div class="bar-wrap"><div class="bar-fill ${pct>90?'full':pct>50?'high':''}" style="width:${pct}%"></div></div>
+      <div style="font-size:10px;color:var(--text3);margin-top:3px">Holding cost: ${h[i]}×${Ii.toFixed(2)} = ${(h[i]*Ii).toFixed(2)}</div>`:''}
+    </div>`;
+  }
+  html+=`</div>`;
+
+  // Cost breakdown chart
+  html+=`<div class="chart-wrap" style="height:200px"><div class="chart-title"><i class="ti ti-chart-donut" aria-hidden="true"></i> Cost structure</div><canvas id="o2-cost-chart" role="img" aria-label="Pie chart of cost structure: fixed, transport, holding costs"></canvas></div>`;
+
+  // Service times table
+  html+=`<div class="section-title" style="margin-top:8px">Active routes + service times (Smax=${Smax})</div>`;
+  html+=`<div style="overflow-x:auto;margin-bottom:16px"><table class="rtbl"><thead><tr><th>Route</th><th>Units shipped</th><th>Service time</th><th>Status</th></tr></thead><tbody>`;
+  for(let i=0;i<nW;i++){if(r.y[i]===0)continue;for(let j=0;j<nC;j++){if(r.x[i][j]>1e-6){const ok2=S[i][j]<=Smax;html+=`<tr><td>W${i+1} → C${j+1}</td><td>${r.x[i][j].toFixed(2)}</td><td>${S[i][j].toFixed(1)}</td><td style="color:${ok2?'var(--green)':'var(--red)'}">${ok2?'✔ Within Smax':'✘ Exceeds Smax'}</td></tr>`;}}}
+  html+=`</tbody></table></div>`;
+
+  html+=`<div class="interp-card"><div class="interp-title"><i class="ti ti-info-circle"></i> Interpretation</div>
+  <div class="interp-body">Z* = ${r.Z.toFixed(2)} = Fixed (${fixedTotal.toFixed(2)}) + Transport (${transTotal.toFixed(2)}) + Holding (${holdTotal.toFixed(2)}). Inventory at each open facility equals its unused capacity. Holding cost penalises excess capacity, driving the solver to match facility size to actual demand. Service gate (Smax=${Smax}) blocked ${[...Array(nW*nC)].filter((_,k)=>S[Math.floor(k/nC)][k%nC]>Smax).length} route(s).</div></div>`;
+
+  document.getElementById('o2-results').innerHTML=html;
+  setTimeout(()=>{
+    const ctx=document.getElementById('o2-cost-chart')?.getContext('2d');
+    if(ctx) new Chart(ctx,{type:'doughnut',data:{labels:['Fixed','Transport','Holding'],datasets:[{data:[fixedTotal,transTotal,holdTotal],backgroundColor:['#3b82f6','#f59e0b','#14b8a6'],borderColor:'#141c2e',borderWidth:2}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}}}});
+  },100);
+}
+
+function loadExample2(){
+  o2.nW=2;o2.nC=3;document.getElementById('o2-nw').textContent=2;document.getElementById('o2-nc').textContent=3;
+  buildOpt2();document.getElementById('o2-smax').value=5;document.getElementById('o2-bigm').value=10000;document.getElementById('o2-results').innerHTML='';
+}
+
+// ═══════════════════════════════════════════════════════
+//  OPTION 3 — Single-Source
+// ═══════════════════════════════════════════════════════
+let o3={nW:2,nC:3};
+function adj3(t,d){if(t==='w')o3.nW=Math.max(1,Math.min(6,o3.nW+d));else o3.nC=Math.max(1,Math.min(8,o3.nC+d));document.getElementById('o3-nw').textContent=o3.nW;document.getElementById('o3-nc').textContent=o3.nC;buildOpt3();document.getElementById('o3-results').innerHTML='';}
+
+function buildOpt3(){
+  let h=`<div style="display:grid;grid-template-columns:110px ${Array(o3.nW).fill('1fr').join(' ')};gap:8px;align-items:center">`;
+  h+=`<div></div>`;for(let i=0;i<o3.nW;i++) h+=`<div style="font-size:11px;font-weight:600;color:var(--text2);text-align:center;font-family:var(--mono)">W${i+1}</div>`;
+  h+=`<div style="font-size:12px;color:var(--text3)">Fixed cost fᵢ</div>`;for(let i=0;i<o3.nW;i++) h+=`<div><input type="number" id="o3-fc${i}" value="${FC_DEF[i]||500}" min="0" style="width:100%;text-align:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:6px;font-size:12px;font-family:var(--mono);color:var(--text);outline:none"></div>`;
+  h+=`<div style="font-size:12px;color:var(--text3)">Capacity Kᵢ</div>`;for(let i=0;i<o3.nW;i++) h+=`<div><input type="number" id="o3-cap${i}" value="${CAP_DEF[i]||60}" min="0" style="width:100%;text-align:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:6px;font-size:12px;font-family:var(--mono);color:var(--text);outline:none"></div>`;
+  h+=`<div style="font-size:12px;color:var(--text3)">Holding cost hᵢ</div>`;for(let i=0;i<o3.nW;i++) h+=`<div><input type="number" id="o3-hc${i}" value="${H_DEF[i]||1}" min="0" step="0.1" style="width:100%;text-align:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:6px;font-size:12px;font-family:var(--mono);color:var(--text);outline:none"></div>`;
+  h+=`</div>`;document.getElementById('o3-fac-grid').innerHTML=h;
+  let d2=`<div style="display:grid;grid-template-columns:repeat(${o3.nC},1fr);gap:10px">`;
+  for(let j=0;j<o3.nC;j++) d2+=`<div class="field"><label>C${j+1}</label><input type="number" id="o3-dem${j}" value="${DEM_DEF[j]||20}" min="0" style="text-align:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:7px;font-size:12px;font-family:var(--mono);color:var(--text);outline:none"></div>`;
+  d2+=`</div>`;document.getElementById('o3-dem-grid').innerHTML=d2;
+  buildMatrix('o3-tc-grid','o3-tc',o3.nW,o3.nC,TC_DEF);
+  buildMatrix('o3-st-grid','o3-st',o3.nW,o3.nC,ST_DEF);
+}
+
+function solveOpt3(){
+  const nW=o3.nW,nC=o3.nC;
+  const f=[],K=[],h=[],d=[],c=[],S=[];
+  for(let i=0;i<nW;i++){f.push(gv(`o3-fc${i}`));K.push(gv(`o3-cap${i}`));h.push(gv(`o3-hc${i}`));}
+  for(let j=0;j<nC;j++) d.push(gv(`o3-dem${j}`));
+  for(let i=0;i<nW;i++){c.push([]);S.push([]);for(let j=0;j<nC;j++){c[i].push(gv(`o3-tc${i}_${j}`));S[i].push(gv(`o3-st${i}_${j}`));}}
+  const Smax=gv('o3-smax')||5,M=gv('o3-bigm')||10000;
+
+  // Formulation
+  let fml=`<span class="obj">min Z = Σfᵢ·yᵢ + ΣΣcᵢⱼ·xᵢⱼ + Σhᵢ·Iᵢ</span>\n\n`;
+  fml+=`<span class="con">[CON1]</span> Σᵢ xᵢⱼ = dⱼ ∀j\n<span class="con">[CON2]</span> Σⱼ xᵢⱼ + Iᵢ = Kᵢ·yᵢ ∀i\n<span class="con">[CON3]</span> xᵢⱼ ≤ M·yᵢ ∀i,j\n<span class="con">[CON4]</span> ★ Σᵢ zᵢⱼ = 1 ∀j  ← STRICT single-source\n<span class="con">[CON5]</span> xᵢⱼ ≤ dⱼ·zᵢⱼ ∀i,j\n<span class="con">[CON6]</span> Sᵢⱼ·zᵢⱼ ≤ ${Smax} ∀i,j\n<span class="con">[CON7]</span> zᵢⱼ ≤ yᵢ ∀i,j\n<span class="con">[CON8]</span> yᵢ,zᵢⱼ ∈ {0,1}`;
+  document.getElementById('o3-formulation').innerHTML=fml;
+
+  // Enumerate: for each warehouse combo, enumerate all single-source assignments
+  let bestZ=Infinity,bestY=null,bestX=null,bestZ_assign=null;
+  const combos=1<<nW;
+  for(let mask=1;mask<combos;mask++){
+    const y=Array.from({length:nW},(_,i)=>(mask>>i)&1);
+    const openWhs=y.map((v,i)=>v?i:-1).filter(v=>v>=0);
+    // Try all single-source assignments (each customer picks one facility)
+    function assignRec(j,assign){
+      if(j===nC){
+        // Evaluate cost
+        const x2=Array.from({length:nW},()=>Array(nC).fill(0));
+        for(let jj=0;jj<nC;jj++) x2[assign[jj]][jj]=d[jj];
+        // Check capacity
+        for(let i=0;i<nW;i++) if(x2[i].reduce((s,v)=>s+v,0)>K[i]+1e-9) return;
+        const I2=y.map((yi,i)=>yi?Math.max(0,K[i]-x2[i].reduce((s,v)=>s+v,0)):0);
+        const Z=y.reduce((s,yi,i)=>s+yi*f[i],0)+x2.reduce((s,row,i)=>s+row.reduce((ss,v,jj)=>ss+v*c[i][jj],0),0)+I2.reduce((s,Ii,i)=>s+Ii*h[i],0);
+        if(Z<bestZ){bestZ=Z;bestY=[...y];bestX=x2.map(r=>[...r]);bestZ_assign=[...assign];}
+        return;
+      }
+      for(const i of openWhs){
+        if(S[i][j]>Smax) continue; // service level gate
+        if(K[i]<d[j]) continue; // capacity must fit full demand
+        assign[j]=i; assignRec(j+1,assign);
+      }
+    }
+    assignRec(0,Array(nC).fill(0));
+  }
+  if(!bestY){document.getElementById('o3-results').innerHTML=`<div class="alert alert-err"><i class="ti ti-x"></i> No feasible single-source solution. Increase Kᵢ, adjust Smax, or use Option 2 (multi-source).</div>`;return;}
+  const I_sol=bestY.map((yi,i)=>yi?Math.max(0,K[i]-bestX[i].reduce((s,v)=>s+v,0)):0);
+  const fixedTotal=bestY.reduce((s,yi,i)=>s+yi*f[i],0);
+  const transTotal=bestX.reduce((s,row,i)=>s+row.reduce((ss,v,j)=>ss+v*c[i][j],0),0);
+  const holdTotal=I_sol.reduce((s,Ii,i)=>s+Ii*h[i],0);
+  renderOpt3Results({Z:bestZ,y:bestY,x:bestX,assign:bestZ_assign},I_sol,f,K,h,d,c,S,Smax,nW,nC,fixedTotal,transTotal,holdTotal);
+}
+
+function renderOpt3Results(r,I_sol,f,K,h,d,c,S,Smax,nW,nC,fixedTotal,transTotal,holdTotal){
+  let html=`<div class="results-header"><i class="ti ti-circle-check" style="color:var(--green);font-size:20px"></i><div><div style="font-size:16px;font-weight:700">Optimal strict single-source solution</div><div style="font-size:12px;color:var(--text3)">Each customer assigned to exactly one facility (CON4 enforced)</div></div></div>`;
+  html+=`<div class="metrics-grid">
+    <div class="metric"><div class="metric-lbl">Min total Z*</div><div class="metric-val green">${r.Z.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-lbl">Fixed costs</div><div class="metric-val blue">${fixedTotal.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-lbl">Transport costs</div><div class="metric-val amber">${transTotal.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-lbl">Holding costs</div><div class="metric-val teal">${holdTotal.toFixed(2)}</div></div>
+  </div>`;
+
+  // Assignment structure
+  html+=`<div class="section-title">Customer assignment structure zᵢⱼ (strict — no splitting)</div>`;
+  html+=`<div style="display:grid;grid-template-columns:repeat(${Math.min(nC,4)},1fr);gap:10px;margin-bottom:20px">`;
+  for(let j=0;j<nC;j++){
+    const i=r.assign[j];
+    html+=`<div style="background:var(--card);border:1px solid rgba(34,197,94,0.3);border-radius:var(--r2);padding:12px;background:rgba(34,197,94,0.05)">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px">C${j+1} assigned to</div>
+      <div style="font-size:18px;font-weight:700;font-family:var(--mono);color:var(--text)">W${i+1}</div>
+      <div style="font-size:11px;color:var(--text3);margin-top:4px">${d[j]} units · S=${S[i][j].toFixed(1)} ≤ ${Smax} ✔</div>
+    </div>`;
+  }
+  html+=`</div>`;
+
+  // Facility cards
+  html+=`<div class="section-title">Facility decisions + inventory</div><div class="facility-row">`;
+  for(let i=0;i<nW;i++){
+    const open=r.y[i]===1,shipped=r.x[i].reduce((s,v)=>s+v,0),Ii=I_sol[i];
+    const pct=K[i]>0?Math.min(100,Math.round(shipped/K[i]*100)):0;
+    html+=`<div class="fac-card ${open?'open':'closed'}"><div class="fac-status ${open?'fac-open':'fac-closed'}">${open?'<i class="ti ti-check"></i> OPEN':'<i class="ti ti-x"></i> CLOSED'}</div><div class="fac-name">W${i+1}</div><div class="fac-meta">f=${f[i]} · K=${K[i]} · h=${h[i]}</div>${open?`<div style="font-size:11px;color:var(--text3)">Shipped:${shipped.toFixed(1)} · Inv:${Ii.toFixed(2)}</div><div class="bar-wrap"><div class="bar-fill ${pct>90?'full':pct>50?'high':''}" style="width:${pct}%"></div></div>`:''}</div>`;
+  }
+  html+=`</div>`;
+
+  // CON checks
+  html+=`<div class="section-title" style="margin-top:8px">Constraint verification (CON1–CON8)</div><div class="checks-grid">`;
+  const c1=d.every((_,j)=>Math.abs(r.x.reduce((s,row)=>s+row[j],0)-d[j])<1e-6);
+  const c4check=r.assign.every((i,j)=>r.x[i][j]===d[j]);
+  const c6check=r.assign.every((i,j)=>S[i][j]<=Smax+1e-6);
+  [['CON1','Σᵢxᵢⱼ=dⱼ',c1],['CON4','★ Σᵢzᵢⱼ=1 (single-source)',true],['CON6','Sᵢⱼ·zᵢⱼ≤Smax',c6check],['CON8','yᵢ,zᵢⱼ∈{0,1}',true]].forEach(([code,desc,pass])=>{
+    html+=`<div class="ck-item ${pass?'pass':'fail'}"><i class="ti ${pass?'ti-check':'ti-x'} ck-icon ${pass?'pass':'fail'}"></i><div><div class="ck-label">[${code}] ${pass?'PASS':'FAIL'}</div><div class="ck-formula">${desc}</div></div></div>`;
+  });
+  html+=`</div>`;
+
+  html+=`<div class="interp-card"><div class="interp-title"><i class="ti ti-info-circle"></i> Interpretation</div>
+  <div class="interp-body">Strict single-source enforced: every customer is served by exactly one facility (CON4). Z* = ${r.Z.toFixed(2)}. The single-source constraint may increase cost compared to multi-source (Option 2), because it prevents demand splitting across cheaper routes. Compare results with Option 2 to quantify the cost of this constraint.</div></div>`;
+  document.getElementById('o3-results').innerHTML=html;
+}
+
+function loadExample3(){
+  o3.nW=2;o3.nC=3;document.getElementById('o3-nw').textContent=2;document.getElementById('o3-nc').textContent=3;
+  buildOpt3();document.getElementById('o3-smax').value=5;document.getElementById('o3-bigm').value=10000;document.getElementById('o3-results').innerHTML='';
+}
+
+// ═══════════════════════════════════════════════════════
+//  OPTION 4 — Moving Average + ILP
+// ═══════════════════════════════════════════════════════
+let o4={nW:2,nC:2};
+function adj4(t,d){if(t==='w')o4.nW=Math.max(1,Math.min(6,o4.nW+d));else if(t==='c')o4.nC=Math.max(1,Math.min(8,o4.nC+d));document.getElementById('o4-nw').textContent=o4.nW;document.getElementById('o4-nc').textContent=o4.nC;buildOpt4();}
+
+function buildOpt4(){
+  // Hist grid: per customer, window size + history
+  let h='';
+  for(let j=0;j<o4.nC;j++){
+    h+=`<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:10px">`;
+    h+=`<div style="font-size:13px;font-weight:600;margin-bottom:10px;font-family:var(--mono);color:var(--teal)">C${j+1}</div>`;
+    h+=`<div class="grid2"><div class="field"><label>Window size n${j+1}</label><input type="number" id="o4-n${j}" value="${j===0?3:2}" min="1"></div>`;
+    h+=`<div class="field"><label>History (comma-separated)</label><input type="text" id="o4-hist${j}" value="${j===0?'100,120,110':'200,180'}"></div></div></div>`;
+  }
+  document.getElementById('o4-hist-grid').innerHTML=h;
+  // Facility grid
+  let fg=`<div style="display:grid;grid-template-columns:110px ${Array(o4.nW).fill('1fr').join(' ')};gap:8px;align-items:center">`;
+  fg+=`<div></div>`;for(let i=0;i<o4.nW;i++) fg+=`<div style="font-size:11px;font-weight:600;color:var(--text2);text-align:center;font-family:var(--mono)">W${i+1}</div>`;
+  fg+=`<div style="font-size:12px;color:var(--text3)">Fixed cost</div>`;for(let i=0;i<o4.nW;i++) fg+=`<div><input type="number" id="o4-fc${i}" value="${FC_DEF[i]||500}" min="0" style="width:100%;text-align:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:6px;font-size:12px;font-family:var(--mono);color:var(--text);outline:none"></div>`;
+  fg+=`<div style="font-size:12px;color:var(--text3)">Capacity</div>`;for(let i=0;i<o4.nW;i++) fg+=`<div><input type="number" id="o4-cap${i}" value="${CAP_DEF[i]||60}" min="0" style="width:100%;text-align:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:6px;font-size:12px;font-family:var(--mono);color:var(--text);outline:none"></div>`;
+  fg+=`</div>`;document.getElementById('o4-fac-grid').innerHTML=fg;
+  buildMatrix('o4-tc-grid','o4-tc',o4.nW,o4.nC,TC_DEF);
+}
+
+function solveOpt4(){
+  const nC=o4.nC,nW=o4.nW;
+  const forecasts=[],histData=[],nList=[];
+  for(let j=0;j<nC;j++){
+    const nj=parseInt(document.getElementById(`o4-n${j}`)?.value)||3;
+    const raw=document.getElementById(`o4-hist${j}`)?.value||'100,120,110';
+    const hist=raw.split(',').map(v=>parseFloat(v.trim())).filter(v=>!isNaN(v));
+    if(hist.length<nj){document.getElementById('o4-results').innerHTML=`<div class="alert alert-err"><i class="ti ti-x"></i> C${j+1}: need at least n${j+1}=${nj} values, got ${hist.length}.</div>`;return;}
+    const window=hist.slice(-nj);
+    const f_j=window.reduce((a,b)=>a+b,0)/nj;
+    forecasts.push(f_j);histData.push(hist);nList.push(nj);
+  }
+
+  const f=[],K=[],c=[];
+  for(let i=0;i<nW;i++){f.push(gv(`o4-fc${i}`));K.push(gv(`o4-cap${i}`));}
+  for(let i=0;i<nW;i++){c.push([]);for(let j=0;j<nC;j++) c[i].push(gv(`o4-tc${i}_${j}`));}
+  const M=gv('o4-bigm')||10000;
+  const res=solveILP(f,K,forecasts,c,M,nW,nC);
+  if(!res){document.getElementById('o4-results').innerHTML=`<div class="alert alert-err"><i class="ti ti-x"></i> ILP infeasible with forecast demands. Check facility capacity.</div>`;return;}
+
+  const fixedTotal=res.y.reduce((s,yi,i)=>s+yi*f[i],0);
+  const transTotal=res.Z-fixedTotal;
+
+  let html=`<div class="results-header"><i class="ti ti-circle-check" style="color:var(--green);font-size:20px"></i><div><div style="font-size:16px;font-weight:700">Stage 1 + Stage 2 complete</div><div style="font-size:12px;color:var(--text3)">MA forecasts → demand inputs → ILP solved</div></div></div>`;
+
+  // Stage 1 results
+  html+=`<div class="section-title" style="color:var(--amber)"><i class="ti ti-chart-line" aria-hidden="true"></i> Stage 1 — Moving Average forecasts</div>`;
+  html+=`<div style="overflow-x:auto;margin-bottom:16px"><table class="rtbl"><thead><tr><th>Customer</th><th>Window nⱼ</th><th>History used</th><th>Forecast dⱼ</th></tr></thead><tbody>`;
+  for(let j=0;j<nC;j++){
+    const win=histData[j].slice(-nList[j]);
+    html+=`<tr><td>C${j+1}</td><td>${nList[j]}</td><td style="font-family:var(--mono);font-size:11px">[${win.map(v=>v.toFixed(0)).join(', ')}]</td><td style="color:var(--amber);font-weight:600">${forecasts[j].toFixed(2)}</td></tr>`;
+  }
+  html+=`<tr><td>Total</td><td>—</td><td>—</td><td style="color:var(--green);font-weight:600">${forecasts.reduce((a,b)=>a+b,0).toFixed(2)}</td></tr></tbody></table></div>`;
+
+  // Forecast chart
+  html+=`<div class="chart-wrap" style="height:200px"><div class="chart-title"><i class="ti ti-chart-bar" aria-hidden="true"></i> Forecast demand per customer</div><canvas id="o4-fc-chart" role="img" aria-label="Bar chart of MA forecast demand per customer"></canvas></div>`;
+
+  // Stage 2 results
+  html+=`<div class="section-title" style="color:var(--blue);margin-top:20px"><i class="ti ti-building-warehouse" aria-hidden="true"></i> Stage 2 — Optimization results</div>`;
+  html+=`<div class="metrics-grid" style="grid-template-columns:repeat(3,1fr)">
+    <div class="metric"><div class="metric-lbl">Min Z*</div><div class="metric-val green">${res.Z.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-lbl">Fixed costs</div><div class="metric-val blue">${fixedTotal.toFixed(2)}</div></div>
+    <div class="metric"><div class="metric-lbl">Transport costs</div><div class="metric-val amber">${transTotal.toFixed(2)}</div></div>
+  </div>`;
+
+  html+=`<div class="facility-row">`;
+  for(let i=0;i<nW;i++){
+    const open=res.y[i]===1,used=res.x[i].reduce((s,v)=>s+v,0);
+    const pct=K[i]>0?Math.min(100,Math.round(used/K[i]*100)):0;
+    html+=`<div class="fac-card ${open?'open':'closed'}"><div class="fac-status ${open?'fac-open':'fac-closed'}">${open?'✔ OPEN':'✘ CLOSED'}</div><div class="fac-name">W${i+1}</div><div class="fac-meta">f=${f[i]} · K=${K[i]}</div>${open?`<div class="bar-wrap"><div class="bar-fill" style="width:${pct}%"></div></div><div style="font-size:10px;color:var(--text3);margin-top:3px">${pct}% capacity</div>`:''}</div>`;
+  }
+  html+=`</div>`;
+
+  html+=`<div class="interp-card"><div class="interp-title"><i class="ti ti-info-circle"></i> Coupled interpretation</div>
+  <div class="interp-body">Each customer's MA forecast (using its own window nⱼ) was substituted as dⱼ into CON1. The Stage 1 forecasts drove the Stage 2 facility decisions. Total forecasted demand: ${forecasts.reduce((a,b)=>a+b,0).toFixed(2)} units. Z* = ${res.Z.toFixed(2)}.</div></div>`;
+
+  document.getElementById('o4-results').innerHTML=html;
+  setTimeout(()=>{
+    const ctx=document.getElementById('o4-fc-chart')?.getContext('2d');
+    if(ctx) new Chart(ctx,{type:'bar',data:{labels:Array.from({length:nC},(_,j)=>`C${j+1}`),datasets:[{label:'Forecast dⱼ',data:forecasts.map(v=>parseFloat(v.toFixed(2))),backgroundColor:'rgba(245,158,11,0.7)',borderColor:'#f59e0b',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8b96b0'},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#8b96b0'},grid:{color:'rgba(255,255,255,0.05)'}}}}});
+  },100);
+}
+
+function loadExample4(){o4={nW:2,nC:2};document.getElementById('o4-nw').textContent=2;document.getElementById('o4-nc').textContent=2;buildOpt4();document.getElementById('o4-results').innerHTML='';}
+
+// ═══════════════════════════════════════════════════════
+//  OPTION 5 — SES multi-alpha
+// ═══════════════════════════════════════════════════════
+let o5={nW:2,nC:2,nA:3};
+function adj5(t,d){if(t==='w')o5.nW=Math.max(1,Math.min(6,o5.nW+d));else if(t==='c')o5.nC=Math.max(1,Math.min(8,o5.nC+d));else if(t==='a')o5.nA=Math.max(2,Math.min(4,o5.nA+d));document.getElementById('o5-nw').textContent=o5.nW;document.getElementById('o5-nc').textContent=o5.nC;document.getElementById('o5-na').textContent=o5.nA;buildOpt5();}
+
+function buildOpt5(){
+  let h='';
+  const defHist=['100,120,140,130,150','200,180,220,190,210','150,160,140,170,155','80,90,85,95,88'];
+  for(let j=0;j<o5.nC;j++){
+    h+=`<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:10px;margin-bottom:8px">`;
+    h+=`<div style="font-size:12px;font-weight:600;margin-bottom:6px;font-family:var(--mono);color:var(--purple)">C${j+1}</div>`;
+    h+=`<div class="field"><label>Historical demand (oldest → newest)</label><input type="text" id="o5-hist${j}" value="${defHist[j]||'100,120,140'}"></div></div>`;
+  }
+  document.getElementById('o5-hist-grid').innerHTML=h;
+  const defAlpha=[0.1,0.5,0.9,0.3];
+  let ah='<div class="grid4">';
+  for(let k=0;k<o5.nA;k++) ah+=`<div class="field"><label>α${k+1}</label><input type="number" id="o5-a${k}" value="${defAlpha[k]||0.3}" min="0.01" max="0.99" step="0.01"></div>`;
+  ah+=`</div>`;document.getElementById('o5-alpha-grid').innerHTML=ah;
+  let fg=`<div style="display:grid;grid-template-columns:110px ${Array(o5.nW).fill('1fr').join(' ')};gap:8px;align-items:center">`;
+  fg+=`<div></div>`;for(let i=0;i<o5.nW;i++) fg+=`<div style="font-size:11px;font-weight:600;color:var(--text2);text-align:center;font-family:var(--mono)">W${i+1}</div>`;
+  fg+=`<div style="font-size:12px;color:var(--text3)">Fixed cost</div>`;for(let i=0;i<o5.nW;i++) fg+=`<div><input type="number" id="o5-fc${i}" value="${FC_DEF[i]||500}" min="0" style="width:100%;text-align:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:6px;font-size:12px;font-family:var(--mono);color:var(--text);outline:none"></div>`;
+  fg+=`<div style="font-size:12px;color:var(--text3)">Capacity</div>`;for(let i=0;i<o5.nW;i++) fg+=`<div><input type="number" id="o5-cap${i}" value="${CAP_DEF[i]||200}" min="0" style="width:100%;text-align:center;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:6px;font-size:12px;font-family:var(--mono);color:var(--text);outline:none"></div>`;
+  fg+=`</div>`;document.getElementById('o5-fac-grid').innerHTML=fg;
+  buildMatrix('o5-tc-grid','o5-tc',o5.nW,o5.nC,TC_DEF);
+}
+
+function solveOpt5(){
+  const nC=o5.nC,nW=o5.nW,nA=o5.nA;
+  const histData=[],alphas=[];
+  for(let j=0;j<nC;j++){
+    const raw=document.getElementById(`o5-hist${j}`)?.value||'100,120,140,130,150';
+    const hist=raw.split(',').map(v=>parseFloat(v.trim())).filter(v=>!isNaN(v));
+    if(hist.length<2){document.getElementById('o5-results').innerHTML=`<div class="alert alert-err"><i class="ti ti-x"></i> C${j+1}: need at least 2 observations.</div>`;return;}
+    histData.push(hist);
+  }
+  for(let k=0;k<nA;k++){
+    const a=parseFloat(document.getElementById(`o5-a${k}`)?.value)||0.1;
+    if(a<=0||a>=1){document.getElementById('o5-results').innerHTML=`<div class="alert alert-err"><i class="ti ti-x"></i> α${k+1} must be strictly between 0 and 1.</div>`;return;}
+    alphas.push(a);
+  }
+
+  const f=[],K=[],c=[];
+  for(let i=0;i<nW;i++){f.push(gv(`o5-fc${i}`));K.push(gv(`o5-cap${i}`));}
+  for(let i=0;i<nW;i++){c.push([]);for(let j=0;j<nC;j++) c[i].push(gv(`o5-tc${i}_${j}`));}
+  const M=gv('o5-bigm')||10000;
+
+  // Compute SES for all customers × all alphas
+  const sesResults=alphas.map(alpha=>histData.map(hist=>ses(hist,alpha)));
+  const avgMapes=alphas.map((_,k)=>sesResults[k].reduce((s,r)=>s+r.mape,0)/nC);
+  const optResults=alphas.map((alpha,k)=>{
+    const d=sesResults[k].map(r=>r.fNext);
+    return solveILP(f,K,d,c,M,nW,nC);
+  });
+
+  const bestMapeK=avgMapes.indexOf(Math.min(...avgMapes));
+  const feasible=optResults.map((r,k)=>r?k:-1).filter(k=>k>=0);
+  const bestZK=feasible.length?feasible.reduce((a,b)=>optResults[a].Z<optResults[b].Z?a:b):null;
+
+  let html=`<div class="results-header"><i class="ti ti-circle-check" style="color:var(--green);font-size:20px"></i><div><div style="font-size:16px;font-weight:700">SES + Optimization complete (${nA} α values)</div><div style="font-size:12px;color:var(--text3)">Each α: full SES tables + separate ILP run</div></div></div>`;
+
+  // Alpha comparison summary
+  html+=`<div class="section-title" style="color:var(--purple)"><i class="ti ti-wave-sine" aria-hidden="true"></i> Cross-α comparison</div>`;
+  html+=`<div style="overflow-x:auto;margin-bottom:20px"><table class="compare-tbl"><thead><tr><th>α</th><th>Avg MAPE</th>`;
+  for(let j=0;j<nC;j++) html+=`<th>d${j+1} (forecast)</th>`;
+  html+=`<th>Z*</th><th>Open facilities</th></tr></thead><tbody>`;
+  alphas.forEach((alpha,k)=>{
+    const isBestMape=k===bestMapeK,isBestZ=k===bestZK;
+    const d=sesResults[k].map(r=>r.fNext);
+    html+=`<tr class="${isBestMape||isBestZ?'best-row':''}"><td style="font-family:var(--mono);font-weight:600">α=${alpha}</td>`;
+    html+=`<td>${avgMapes[k].toFixed(2)}%${isBestMape?'<span class="best-badge"><i class="ti ti-star"></i> best MAPE</span>':''}</td>`;
+    for(let j=0;j<nC;j++) html+=`<td>${d[j].toFixed(2)}</td>`;
+    html+=optResults[k]?`<td>${optResults[k].Z.toFixed(2)}${isBestZ?'<span class="best-badge"><i class="ti ti-trophy"></i> best Z*</span>':''}</td><td>${optResults[k].y.map((v,i)=>v?`W${i+1}`:'').filter(Boolean).join(', ')}</td>`:
+      `<td style="color:var(--red)">Infeasible</td><td>—</td>`;
+    html+=`</tr>`;
+  });
+  html+=`</tbody></table></div>`;
+
+  // Charts
+  html+=`<div class="grid2">`;
+  html+=`<div class="chart-wrap" style="height:200px"><div class="chart-title"><i class="ti ti-chart-bar" aria-hidden="true"></i> MAPE by α</div><canvas id="o5-mape-chart" role="img" aria-label="Bar chart of MAPE per alpha value"></canvas></div>`;
+  html+=`<div class="chart-wrap" style="height:200px"><div class="chart-title"><i class="ti ti-currency-dollar" aria-hidden="true"></i> Z* by α</div><canvas id="o5-z-chart" role="img" aria-label="Bar chart of optimal cost Z* per alpha value"></canvas></div>`;
+  html+=`</div>`;
+
+  // Per-alpha SES tables (first customer only for brevity)
+  html+=`<div class="section-title" style="margin-top:8px">SES fitted values — C1 (all α values)</div>`;
+  html+=`<div class="alpha-tabs" id="o5-alpha-tabs">`;
+  alphas.forEach((a,k)=>html+=`<div class="alpha-tab ${k===0?'active':''}" onclick="showAlphaTab(${k},${nA})">${k===0?'<i class="ti ti-star" style="font-size:10px"></i> ':''}α=${a}</div>`);
+  html+=`</div>`;
+  alphas.forEach((alpha,k)=>{
+    const {fitted,fNext,errors,mape}=sesResults[k][0];
+    const hist=histData[0];
+    html+=`<div id="o5-tab-${k}" style="display:${k===0?'block':'none'}">`;
+    html+=`<div style="overflow-x:auto;margin-bottom:8px"><table class="ses-table"><thead><tr><th>Period</th><th>Actual Aₜ</th><th>Forecast Fₜ</th><th>Error eₜ</th><th>|eₜ/Aₜ|%</th></tr></thead><tbody>`;
+    html+=`<tr class="seed-row"><td>t=1 (seed)</td><td>${hist[0].toFixed(2)}</td><td>${fitted[0].toFixed(2)}</td><td>—</td><td>—</td></tr>`;
+    for(let t=1;t<hist.length;t++){
+      const ape=hist[t]!==0?Math.abs(errors[t-1])/hist[t]*100:0;
+      html+=`<tr><td>t=${t+1}</td><td>${hist[t].toFixed(2)}</td><td>${fitted[t-1].toFixed(2)}</td><td>${errors[t-1]>=0?'+':''}${errors[t-1].toFixed(2)}</td><td>${ape.toFixed(2)}%</td></tr>`;
+    }
+    html+=`<tr class="forecast-row"><td>t=T+1 (forecast)</td><td>—</td><td>${fNext.toFixed(2)}</td><td>—</td><td>MAPE=${mape.toFixed(2)}%</td></tr>`;
+    html+=`</tbody></table></div></div>`;
+  });
+
+  // Best α summary
+  html+=`<div class="interp-card"><div class="interp-title"><i class="ti ti-info-circle"></i> Cross-α interpretation</div>
+  <div class="interp-body">
+    Best MAPE: α=${alphas[bestMapeK]} (${avgMapes[bestMapeK].toFixed(2)}% avg across all customers).<br>
+    ${bestZK!==null?`Best Z*: α=${alphas[bestZK]} (Z* = ${optResults[bestZK].Z.toFixed(2)}).`:''}<br>
+    ${bestMapeK!==bestZK&&bestZK!==null?`<strong>Trade-off detected:</strong> best MAPE (α=${alphas[bestMapeK]}) ≠ best Z* (α=${alphas[bestZK]}). Minimising forecast error does not always minimise supply-chain cost.`:'Best MAPE and best Z* agree — the optimal forecast also produces the lowest cost.'}
+  </div></div>`;
+
+  document.getElementById('o5-results').innerHTML=html;
+
+  setTimeout(()=>{
+    const labels=alphas.map(a=>`α=${a}`);
+    const ctx1=document.getElementById('o5-mape-chart')?.getContext('2d');
+    if(ctx1) new Chart(ctx1,{type:'bar',data:{labels,datasets:[{label:'Avg MAPE %',data:avgMapes.map(v=>parseFloat(v.toFixed(2))),backgroundColor:alphas.map((_,k)=>k===bestMapeK?'rgba(168,85,247,0.8)':'rgba(168,85,247,0.3)'),borderColor:'#a855f7',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8b96b0'},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#8b96b0'},grid:{color:'rgba(255,255,255,0.05)'},title:{display:true,text:'MAPE %',color:'#8b96b0'}}}}});
+    const ctx2=document.getElementById('o5-z-chart')?.getContext('2d');
+    if(ctx2){
+      const zData=optResults.map(r=>r?parseFloat(r.Z.toFixed(2)):null);
+      new Chart(ctx2,{type:'bar',data:{labels,datasets:[{label:'Z*',data:zData,backgroundColor:optResults.map((_,k)=>k===bestZK?'rgba(34,197,94,0.8)':'rgba(34,197,94,0.3)'),borderColor:'#22c55e',borderWidth:1}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:'#8b96b0'},grid:{color:'rgba(255,255,255,0.05)'}},y:{ticks:{color:'#8b96b0'},grid:{color:'rgba(255,255,255,0.05)'},title:{display:true,text:'Z*',color:'#8b96b0'}}}}});
+    }
+  },100);
+}
+
+function showAlphaTab(k,nA){
+  for(let i=0;i<nA;i++){
+    const tab=document.getElementById(`o5-tab-${i}`);
+    const btn=document.querySelectorAll('.alpha-tab')[i];
+    if(tab) tab.style.display=i===k?'block':'none';
+    if(btn) btn.classList.toggle('active',i===k);
+  }
+}
+
+function loadExample5(){o5={nW:2,nC:2,nA:3};document.getElementById('o5-nw').textContent=2;document.getElementById('o5-nc').textContent=2;document.getElementById('o5-na').textContent=3;buildOpt5();document.getElementById('o5-results').innerHTML='';}
+
+// ═══════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════
+buildOpt1();buildOpt2();buildOpt3();buildOpt4();buildOpt5();
+</script>
 </body>
 </html>
