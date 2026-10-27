@@ -1,0 +1,13 @@
+cff-version: 1.2.0
+message: "If you use this prototype, cite the project and the original dataset and paper listed in CREDITS.md."
+title: "Physics-guided tool-wear review prototype"
+version: "0.2.0"
+date-released: "2026-10-27"
+authors:
+  - name: "TCM Capstone Project"
+abstract: "A static NASA milling review app with curated VB scoring, current/history model routes and precomputed class-boundary exercises. Research prototype; no independent deployment validation."
+keywords:
+  - tool wear
+  - NASA milling
+  - physics-guided features
+  - curated labels
